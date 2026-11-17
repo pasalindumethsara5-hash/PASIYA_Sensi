@@ -25,6 +25,7 @@ import { SensitivityView } from './components/SensitivityView';
 import { SplashIntro } from './components/SplashIntro';
 import { ToolsHubView } from './components/ToolsHubView';
 import { VaultGuardView } from './components/VaultGuardView';
+import { ProfileView } from './components/ProfileView';
 import { AuthModal } from './components/AuthModal';
 import { AdminConsoleModal } from './components/AdminConsoleModal';
 import { AppUpdateModal } from './components/AppUpdateModal';
@@ -101,7 +102,7 @@ const DEFAULT_SLOTS: SensitivityConfig[] = [
 export default function App() {
   const { telemetry, probeDisplayHz } = useDeviceTelemetry();
 
-  const [activeTab, setActiveTab] = useState<TabId>('sensitivity');
+  const [activeTab, setActiveTab] = useState<TabId>('hub');
   const [officialPresets, setOfficialPresets] =
     useState<SensitivityConfig[]>(BUILTIN_CONFIGS);
   const [customConfigs, setCustomConfigs] = useState<SensitivityConfig[]>(() =>
@@ -519,17 +520,11 @@ export default function App() {
     mobileLabel: string;
     icon: React.ComponentType<{ className?: string }>;
   }[] = [
-    {
-      id: 'sensitivity',
-      label: 'Sensitivity',
-      mobileLabel: 'Sensi',
-      icon: Crosshair,
-    },
-    { id: 'aim', label: 'Aim Assist', mobileLabel: 'Aim', icon: Target },
-    { id: 'hub', label: 'Command Hub', mobileLabel: 'Hub', icon: Activity },
-    { id: 'optimize', label: 'FPS & Boost', mobileLabel: 'Boost', icon: Gauge },
-    { id: 'tools', label: 'Net & Touch', mobileLabel: 'Tools', icon: Wifi },
-    { id: 'vault', label: 'Vault & Guard', mobileLabel: 'Vault', icon: Archive },
+    { id: 'optimize', label: 'Optimize', mobileLabel: 'Optimize', icon: Gauge },
+    { id: 'sensitivity', label: 'Aimsensi', mobileLabel: 'Aimsensi', icon: Target },
+    { id: 'hub', label: 'Home', mobileLabel: 'Home', icon: Activity },
+    { id: 'tools', label: 'Tools', mobileLabel: 'Tools', icon: Wifi },
+    { id: 'vault', label: 'Profile', mobileLabel: 'Profile', icon: User },
   ];
 
   const [tabDirection, setTabDirection] = useState<'right' | 'left' | 'none'>(
@@ -758,11 +753,15 @@ export default function App() {
           {activeTab === 'tools' && <ToolsHubView platform={platform} />}
 
           {activeTab === 'vault' && (
-            <VaultGuardView
+            <ProfileView
+              currentUser={currentUser}
+              telemetry={telemetry}
+              platform={platform}
+              onOpenAuthModal={() => setShowAuthModal(true)}
+              onOpenAdminConsole={() => setShowAdminModal(true)}
               configs={allVaultConfigs}
               activeConfig={activeConfig}
               presets={officialPresets}
-              platform={platform}
               targetFps={targetFps}
               onLoadConfig={handleLoadFromVault}
               onDeleteCustom={handleDeleteCustom}
@@ -791,7 +790,7 @@ export default function App() {
           <div className="mx-2 mt-0.5 h-[calc(100%-6px)] rounded-xl bg-gradient-to-b from-[#EF4444]/16 via-[#EF4444]/5 to-transparent" />
         </div>
 
-        <div className="relative z-10 grid grid-cols-6 h-14 items-center">
+        <div className="relative z-10 grid grid-cols-5 h-14 items-center">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isCurrent = activeTab === item.id;

@@ -7,9 +7,13 @@ import {
   Flame,
   RotateCcw,
   Save,
+  Settings,
   Share,
+  Sliders,
   Smartphone,
   Sparkles,
+  Target,
+  Zap,
 } from 'lucide-react';
 import {
   type AdaptiveSensiTier,
@@ -157,6 +161,35 @@ export const SensitivityView: React.FC<SensitivityViewProps> = ({
   const recoilDampeningPct = activeConfig.recoilDampeningPct ?? 75;
   const fireButtonYOffset = activeConfig.fireButtonYOffset ?? 18;
   const xyRatio = computeDragPhysicsRatio(xAxisScale, yDragScale);
+
+  // DOBBEX HEX Auto Drag Assist & Community Tweaks State
+  const [autoDragActive, setAutoDragActive] = useState(true);
+  const [activeCommunityTweak, setActiveCommunityTweak] = useState('16450');
+  const [upwardDragBoost, setUpwardDragBoost] = useState(4.8);
+  const [headshotMagnetism, setHeadshotMagnetism] = useState(98);
+  const [recoilStabilizer, setRecoilStabilizer] = useState(75);
+  const [instantDragTrigger, setInstantDragTrigger] = useState(true);
+  const [assistiveTouchTracking, setAssistiveTouchTracking] = useState(85);
+
+  const handleOpenIosAccessibilitySettings = () => {
+    triggerHaptic('action');
+    window.location.href = 'App-prefs:ACCESSIBILITY';
+    setTimeout(() => {
+      alert(
+        'iPhone Touch Calibration Guide:\n\n1. Open iPhone Settings\n2. Tap "Accessibility" > "Touch"\n3. Tap "AssistiveTouch" (Turn ON)\n4. Set "Tracking Sensitivity" slider to 85% (Rabbit Icon 🐇)\n5. Set "Touch Accommodations" Hold Duration to 0.10s\n6. Return to Free Fire for instant drag lock!'
+      );
+    }, 450);
+  };
+
+  const handleOpenAndroidSettings = () => {
+    triggerHaptic('action');
+    window.location.href = 'package:com.android.settings';
+    setTimeout(() => {
+      alert(
+        'Android Sensi Boost Guide:\n\n1. Open Phone Settings\n2. Go to System > Language & Input > Pointer Speed (Set to MAX 🐇)\n3. In Developer Options, set "Smallest Width (DPI)" to 520\n4. Set Touch & Hold Delay to Short (0.5s)\n5. Return to Free Fire for instant drag lock!'
+      );
+    }, 450);
+  };
 
   const updateField = <K extends keyof SensitivityConfig>(
     key: K,
@@ -541,6 +574,248 @@ export const SensitivityView: React.FC<SensitivityViewProps> = ({
         targetFps={targetFps}
         onLaunchTriggered={() => onLaunchGame()}
       />
+
+      {/* DOBBEX HEX Auto Drag Assist & Community Tweaks Engine */}
+      <section className="rounded-2xl bg-[#0B0B0F] border border-white/10 p-5 sm:p-6 shadow-xl space-y-4">
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2.5">
+            <Target className="w-5 h-5 text-[#38BDF8]" />
+            <div>
+              <h2 className="text-base font-bold text-white">Auto Drag Assist &amp; Tweaks</h2>
+              <p className="text-xs text-[#9A9AA6]">Custom hex codes &amp; upward recoil dampening</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-mono font-bold text-[#38BDF8] bg-[#38BDF8]/15 px-2.5 py-0.5 rounded border border-[#38BDF8]/30">
+            Tweak #{activeCommunityTweak}
+          </span>
+        </div>
+
+        {/* Toggle 1: Aim Auto Drag Assist */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/5">
+          <div>
+            <div className="text-xs font-bold text-white">Aim Auto Drag Assist</div>
+            <div className="text-[10px] text-[#9A9AA6]">Activates vertical drag lift curve on 1st touch</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic('action');
+              setAutoDragActive((v) => !v);
+            }}
+            className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
+              autoDragActive ? 'bg-[#38BDF8]' : 'bg-white/20'
+            }`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                autoDragActive ? 'translate-x-6' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Community Tweaks Selector */}
+        <div>
+          <label className="block text-xs font-mono text-[#9A9AA6] mb-2 uppercase tracking-wider">
+            COMMUNITY TWEAKS
+          </label>
+          <div className="grid grid-cols-5 gap-2">
+            {['16450', '21024', '8080', '16452', 'Custom'].map((code) => {
+              const isSelected = activeCommunityTweak === code;
+              return (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('selection');
+                    setActiveCommunityTweak(code);
+                  }}
+                  className={`py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+                    isSelected
+                      ? 'bg-[#38BDF8] text-black shadow-[0_0_15px_rgba(56,189,248,0.4)]'
+                      : 'bg-black/40 text-white border border-white/10 hover:border-white/25'
+                  }`}
+                >
+                  {code}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Sliders: Upward Drag, Headshot Magnetism, Micro-Recoil */}
+        <div className="space-y-3 pt-2">
+          <div>
+            <div className="flex justify-between text-xs font-semibold text-white mb-1">
+              <span className="flex items-center gap-1.5 text-[#38BDF8]">
+                <span>↗</span> Upward Drag Lift Boost
+              </span>
+              <span className="font-mono text-[#38BDF8]">{upwardDragBoost.toFixed(2)}x</span>
+            </div>
+            <input
+              type="range"
+              min="1.0"
+              max="6.0"
+              step="0.05"
+              value={upwardDragBoost}
+              onChange={(e) => {
+                triggerSliderDetent();
+                setUpwardDragBoost(Number(e.target.value));
+              }}
+              className="w-full accent-[#38BDF8] cursor-pointer"
+            />
+          </div>
+
+          <div>
+            <div className="flex justify-between text-xs font-semibold text-white mb-1">
+              <span className="flex items-center gap-1.5 text-[#EF4444]">
+                <span>🎯</span> Headshot Magnetism
+              </span>
+              <span className="font-mono text-white">{headshotMagnetism}%</span>
+            </div>
+            <input
+              type="range"
+              min="50"
+              max="100"
+              step="1"
+              value={headshotMagnetism}
+              onChange={(e) => {
+                triggerSliderDetent();
+                setHeadshotMagnetism(Number(e.target.value));
+              }}
+              className="w-full accent-[#EF4444] cursor-pointer"
+            />
+          </div>
+
+          <div>
+            <div className="flex justify-between text-xs font-semibold text-white mb-1">
+              <span className="flex items-center gap-1.5 text-[#38BDF8]">
+                <span>🛡</span> Micro-Recoil Stabilizer
+              </span>
+              <span className="font-mono text-[#38BDF8]">{recoilStabilizer}%</span>
+            </div>
+            <input
+              type="range"
+              min="20"
+              max="100"
+              step="1"
+              value={recoilStabilizer}
+              onChange={(e) => {
+                triggerSliderDetent();
+                setRecoilStabilizer(Number(e.target.value));
+              }}
+              className="w-full accent-[#38BDF8] cursor-pointer"
+            />
+          </div>
+        </div>
+
+        {/* Toggle 2: 1st Touch Instant Drag Trigger */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/5">
+          <div className="text-xs font-bold text-white">1st Touch Instant Drag Trigger</div>
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic('action');
+              setInstantDragTrigger((v) => !v);
+            }}
+            className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
+              instantDragTrigger ? 'bg-[#38BDF8]' : 'bg-white/20'
+            }`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                instantDragTrigger ? 'translate-x-6' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+      </section>
+
+      {/* DOBBEX HEX REAL SYSTEM TOUCH CALIBRATION (WHY GAME SENSI DIRECTLY CHANGES) */}
+      <section className="rounded-2xl bg-[#0B0B0F] border border-[#38BDF8]/40 p-5 sm:p-6 shadow-[0_0_30px_rgba(56,189,248,0.12)] space-y-4">
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2.5">
+            <Settings className="w-5 h-5 text-[#38BDF8]" />
+            <div>
+              <h2 className="text-base font-bold text-white">
+                {platform === 'ios' ? 'iOS AssistiveTouch Tuning' : 'Android Pointer Speed & Touch Engine'}
+              </h2>
+              <span className="text-xs text-[#86EFAC]">
+                Direct Hardware Digitizer Calibration
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={platform === 'ios' ? handleOpenIosAccessibilitySettings : handleOpenAndroidSettings}
+            className="px-3.5 py-1.5 rounded-xl bg-[#38BDF8] hover:bg-[#0EA5E9] text-black text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span>Open Settings</span>
+          </button>
+        </div>
+
+        {platform === 'ios' ? (
+          <div>
+            <div className="flex justify-between text-xs font-semibold text-white mb-1.5">
+              <span>Tracking Sensitivity (Rabbit Icon)</span>
+              <span className="font-mono text-[#38BDF8]">{assistiveTouchTracking}%</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="100"
+              value={assistiveTouchTracking}
+              onChange={(e) => {
+                triggerSliderDetent();
+                setAssistiveTouchTracking(Number(e.target.value));
+              }}
+              className="w-full accent-[#38BDF8] cursor-pointer"
+            />
+            <div className="mt-3 p-3 rounded-xl bg-black/50 border border-white/5 space-y-2 text-xs">
+              <div className="text-[10px] uppercase font-mono text-[#9A9AA6] font-bold">
+                RECOMMENDED HARDWARE CALIBRATION:
+              </div>
+              <div className="flex items-center gap-2 text-[#86EFAC]">
+                <span>✓</span>
+                <span>AssistiveTouch Tracking: 85% (Rabbit Icon 🐇)</span>
+              </div>
+              <div className="flex items-center gap-2 text-[#86EFAC]">
+                <span>✓</span>
+                <span>Touch Accommodations: Hold Duration 0.10s</span>
+              </div>
+              <div className="flex items-center gap-2 text-[#86EFAC]">
+                <span>✓</span>
+                <span>3D Touch / Haptic: Fast Response</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="p-3 rounded-xl bg-black/50 border border-white/5 space-y-2 text-xs">
+              <div className="text-[10px] uppercase font-mono text-[#9A9AA6] font-bold">
+                RECOMMENDED ANDROID HARDWARE CALIBRATION:
+              </div>
+              <div className="flex items-center gap-2 text-[#86EFAC]">
+                <span>✓</span>
+                <span>Pointer Speed: Maximum (Rabbit 🐇)</span>
+              </div>
+              <div className="flex items-center gap-2 text-[#86EFAC]">
+                <span>✓</span>
+                <span>Developer Options: Smallest Width (DPI) 520 / 600</span>
+              </div>
+              <div className="flex items-center gap-2 text-[#86EFAC]">
+                <span>✓</span>
+                <span>Touch &amp; Hold Delay: Short (0.5s)</span>
+              </div>
+              <div className="flex items-center gap-2 text-[#86EFAC]">
+                <span>✓</span>
+                <span>Touch Sampling Rate: 240Hz / 360Hz Gaming Mode</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Main 2-Column Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
