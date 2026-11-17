@@ -9,6 +9,8 @@ import {
   Target,
   User,
   Wifi,
+  Globe,
+  Share2,
 } from 'lucide-react';
 import { AimAssistView } from './components/AimAssistView';
 import { AnimatedBackdrop } from './components/AnimatedBackdrop';
@@ -650,6 +652,18 @@ export default function App() {
                 <span className="hidden sm:inline">Sign In</span>
               </button>
             )}
+
+            {/* Official Website & Squad Downloads Link */}
+            <a
+              href="./download.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#EF4444]/15 hover:bg-[#EF4444]/25 border border-[#EF4444]/40 text-xs font-semibold text-[#FCA5A5] inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+              title="Official Website & Squad Downloads"
+            >
+              <Globe className="w-3.5 h-3.5 text-[#EF4444]" />
+              <span className="hidden md:inline">Website &amp; Share</span>
+            </a>
 
             <PWAInstallButton
               onFallbackAction={() => void handleCopyActiveConfig()}
