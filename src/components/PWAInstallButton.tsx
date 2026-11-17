@@ -52,15 +52,8 @@ export const PWAInstallButton: React.FC<{
     ) : null;
   }
 
-  const handlePrimaryInstallClick = async () => {
+  const handlePrimaryInstallClick = () => {
     triggerHaptic('action');
-    if (isInstallable) {
-      const accepted = await install();
-      if (accepted) {
-        setShowInstallSheet(false);
-        return;
-      }
-    }
     setShowInstallSheet(true);
   };
 
@@ -96,11 +89,29 @@ export const PWAInstallButton: React.FC<{
       <button
         type="button"
         data-testid="header-install-btn"
-        onClick={() => void handlePrimaryInstallClick()}
-        className="min-h-[40px] inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg bg-[#EF4444] text-white text-xs font-semibold tracking-tight hover:bg-[#DC2626] active:scale-[0.98] transition-all whitespace-nowrap shrink-0 cursor-pointer"
+        onClick={handlePrimaryInstallClick}
+        className={`min-h-[40px] inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold tracking-tight active:scale-[0.98] transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+          isAndroid
+            ? 'bg-[#22C55E] text-black hover:bg-[#16A34A] hover:text-white shadow-[0_0_15px_rgba(34,197,94,0.25)]'
+            : 'bg-[#EF4444] text-white hover:bg-[#DC2626] shadow-[0_0_15px_rgba(239,68,68,0.25)]'
+        }`}
       >
-        <Download className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-        <span>Install App</span>
+        {isAndroid ? (
+          <>
+            <Download className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span>Download APK</span>
+          </>
+        ) : isIOS ? (
+          <>
+            <Smartphone className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span>Install on iPhone</span>
+          </>
+        ) : (
+          <>
+            <Download className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span>Install App</span>
+          </>
+        )}
       </button>
 
       {showInstallSheet && (
@@ -108,21 +119,22 @@ export const PWAInstallButton: React.FC<{
           role="dialog"
           aria-modal="true"
           aria-labelledby="pasiya-install-sheet-title"
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-4 overflow-y-auto"
         >
-          <div className="w-full max-w-md rounded-2xl bg-[#0B0B0F] border border-[#23232B] p-6 shadow-2xl">
-            <div className="flex items-start justify-between gap-4">
+          <div className="w-full max-w-md my-auto max-h-[90vh] flex flex-col rounded-2xl bg-[#0B0B0F] border border-[#23232B] shadow-2xl overflow-hidden">
+            {/* Header bar */}
+            <div className="flex items-center justify-between gap-3 p-4 sm:p-5 border-b border-[#23232B] bg-[#07070A] shrink-0">
               <div className="flex items-center gap-3">
-                <BrandLogo size={34} />
+                <BrandLogo size={32} />
                 <div>
                   <h2
                     id="pasiya-install-sheet-title"
-                    className="font-display text-lg font-bold text-white leading-tight"
+                    className="font-display text-base sm:text-lg font-bold text-white leading-tight"
                   >
                     Install PASIYA <span className="text-[#EF4444]">Sensi</span>
                   </h2>
-                  <p className="text-xs font-mono text-[#9A9AA6] mt-0.5">
-                    {platformBadge} · Standalone Home Screen App
+                  <p className="text-[11px] font-mono text-[#9A9AA6]">
+                    {platformBadge} · Direct Installation
                   </p>
                 </div>
               </div>
@@ -133,176 +145,154 @@ export const PWAInstallButton: React.FC<{
                   triggerHaptic('tap');
                   setShowInstallSheet(false);
                 }}
-                className="min-h-[44px] min-w-[44px] -mr-2 -mt-2 flex items-center justify-center rounded-lg text-[#9A9AA6] hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="mt-4 text-sm text-[#D4D4DD] leading-relaxed">
-              {guidance.headline}
-            </p>
+            {/* Scrollable Body */}
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
+              {/* ANDROID SECTION */}
+              {(!isIOS || isAndroid) && (
+                <div className="p-4 rounded-xl bg-[#0D1C12] border border-[#22C55E]/60 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Smartphone className="w-4 h-4 text-[#22C55E]" />
+                      Official Android Release APK (v2.0)
+                    </span>
+                    <span className="text-[10px] font-mono font-bold text-[#22C55E] bg-[#22C55E]/15 px-2 py-0.5 rounded border border-[#22C55E]/30">
+                      SIGNED RELEASE
+                    </span>
+                  </div>
 
-            {/* Direct Android APK Download Button (Works on all Android phones!) */}
-            {(!isIOS || isAndroid) && (
-              <div className="mt-4 p-3.5 rounded-xl bg-[#0F1E15] border border-[#22C55E]/50 space-y-2">
-                <a
-                  href={`${import.meta.env.BASE_URL}PASIYA-SENSI.apk`}
-                  download="PASIYA-SENSI.apk"
-                  onClick={() => triggerHaptic('success')}
-                  className="w-full min-h-[46px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#22C55E] text-black text-sm font-bold hover:bg-[#16A34A] hover:text-white transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)]"
-                >
-                  <Download className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  <span>Download Android APK (Direct Install)</span>
-                </a>
-                <p className="text-[11px] text-[#86EFAC] text-center font-medium">
-                  ✓ Verified Safe · Release Signed · Free Fire Floating Crosshair
-                </p>
-              </div>
-            )}
+                  <a
+                    href="./PASIYA-SENSI.apk"
+                    download="PASIYA-SENSI.apk"
+                    onClick={() => triggerHaptic('success')}
+                    className="w-full min-h-[46px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#22C55E] text-black text-sm font-bold hover:bg-[#16A34A] hover:text-white transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] cursor-pointer"
+                  >
+                    <Download className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    <span>Download Android APK (~4.3 MB)</span>
+                  </a>
 
-            {/* Instant Native One-Tap Prompt (Android Chrome / Edge / Chromium) */}
-            {isInstallable && (
-              <button
-                type="button"
-                data-testid="confirm-native-install-btn"
-                onClick={() => {
-                  triggerHaptic('success');
-                  void install().then((ok) => {
-                    if (ok) setShowInstallSheet(false);
-                  });
-                }}
-                className="mt-5 w-full min-h-[46px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#EF4444] text-white text-sm font-semibold hover:bg-[#DC2626] transition-colors cursor-pointer"
-              >
-                <Download className="w-4 h-4" aria-hidden="true" />
-                <span>Install App on This Device</span>
-              </button>
-            )}
-
-            {/* Embedded iframe / WhatsApp WebView breakout CTA */}
-            {!isInstallable && guidance.mode === 'open-external' && (
-              <div className="mt-5 space-y-3">
-                <a
-                  href={externalBrowserUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => triggerHaptic('action')}
-                  className="w-full min-h-[46px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#EF4444] text-white text-sm font-semibold hover:bg-[#DC2626] transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" aria-hidden="true" />
-                  <span>
-                    {isIOS
-                      ? 'Open in Safari to Install'
-                      : 'Open in Chrome & Auto-Install'}
-                  </span>
-                </a>
-                <div className="rounded-xl bg-[#111116] border border-[#23232B] p-3.5 text-xs text-[#B2B2BF] leading-relaxed">
-                  {isIOS
-                    ? 'Apple requires opening this link in Safari directly, then tapping Share → Add to Home Screen.'
-                    : 'Android suppresses automatic app install inside embedded frames or in-app chats. Opening directly in Chrome triggers the native 1-tap Install popup.'}
+                  <div className="p-2.5 rounded-lg bg-black/40 text-[11px] text-[#A7F3D0] space-y-1">
+                    <div>1. Click <strong>Download APK</strong> and wait for file to finish.</div>
+                    <div>2. Tap <strong>Open</strong> in Chrome or your notification bar.</div>
+                    <div>3. Tap <strong>Install</strong>. (If Play Protect asks, tap <em>More details &gt; Install anyway</em>).</div>
+                    <div>4. Open app &amp; enjoy the Free Fire Native Crosshair!</div>
+                  </div>
                 </div>
-              </div>
-            )}
-
-            {/* iOS Safari & WebClip direct options */}
-            {!isInstallable && isIOS && (
-              <div className="mt-4 space-y-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerHaptic('success');
-                    downloadIosWebClipProfile();
-                  }}
-                  className="w-full min-h-[46px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#EF4444] text-white text-sm font-semibold hover:bg-[#DC2626] transition-colors cursor-pointer"
-                >
-                  <Download className="w-4 h-4" aria-hidden="true" />
-                  <span>Download iOS Profile (Direct Home Screen)</span>
-                </button>
-
-                <div className="text-[11px] text-center text-[#9A9AA6]">
-                  — OR Use Safari 2-Step Quick Add —
-                </div>
-
-                <ol className="space-y-2.5 rounded-xl bg-[#111116] border border-[#23232B] p-4 text-sm text-[#D4D4DD]">
-                  <li className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-md bg-[#EF4444]/15 border border-[#EF4444]/35 text-[#EF4444] text-xs font-bold flex items-center justify-center shrink-0">
-                      1
-                    </span>
-                    <span className="flex items-center gap-1.5 flex-wrap">
-                      Tap <Share className="w-4 h-4 text-white inline" aria-hidden="true" />
-                      <strong className="text-white">Share</strong> in Safari toolbar.
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-md bg-[#EF4444]/15 border border-[#EF4444]/35 text-[#EF4444] text-xs font-bold flex items-center justify-center shrink-0">
-                      2
-                    </span>
-                    <span className="flex items-center gap-1.5 flex-wrap">
-                      Tap{' '}
-                      <PlusSquare className="w-4 h-4 text-white inline" aria-hidden="true" />
-                      <strong className="text-white">Add to Home Screen</strong>.
-                    </span>
-                  </li>
-                </ol>
-              </div>
-            )}
-
-            {/* Non-iOS Browser Menu / Desktop fallback */}
-            {!isInstallable && !isIOS && guidance.mode !== 'open-external' && (
-              <ol className="mt-4 space-y-2.5 rounded-xl bg-[#111116] border border-[#23232B] p-4 text-sm text-[#D4D4DD]">
-                <li className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded-md bg-[#EF4444]/15 border border-[#EF4444]/35 text-[#EF4444] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                    1
-                  </span>
-                  <span>
-                    Open your browser menu (<strong className="text-white">⋮</strong>) or address-bar{' '}
-                    <Smartphone className="w-3.5 h-3.5 inline text-white" aria-hidden="true" />{' '}
-                    <strong className="text-white">Install</strong> icon.
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded-md bg-[#EF4444]/15 border border-[#EF4444]/35 text-[#EF4444] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                    2
-                  </span>
-                  <span>
-                    Select <strong className="text-white">Install app</strong> /{' '}
-                    <strong className="text-white">Add to Home screen</strong> to install PASIYA SENSI offline.
-                  </span>
-                </li>
-              </ol>
-            )}
-
-            <div className="mt-5 flex flex-wrap items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => void handleCopyInstallUrl()}
-                className="flex-1 min-h-[42px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#141419] border border-[#282832] px-3.5 text-xs font-semibold text-white hover:border-[#3A3A48] transition-colors cursor-pointer"
-              >
-                {copiedLink ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-[#10B981]" aria-hidden="true" />
-                    <span>Link Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span>Copy App Link</span>
-                  </>
-                )}
-              </button>
-
-              {onFallbackAction && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onFallbackAction();
-                    setShowInstallSheet(false);
-                  }}
-                  className="flex-1 min-h-[42px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#141419] border border-[#282832] px-3.5 text-xs font-semibold text-[#D4D4DD] hover:text-white hover:border-[#3A3A48] transition-colors cursor-pointer"
-                >
-                  <span>{fallbackLabel}</span>
-                </button>
               )}
+
+              {/* IOS SECTION */}
+              {isIOS && (
+                <div className="space-y-3">
+                  <div className="p-4 rounded-xl bg-[#180C0E] border border-[#EF4444]/60 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <Share className="w-4 h-4 text-[#EF4444]" />
+                        Official Safari 2-Tap Install (Recommended)
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-[#EF4444] bg-[#EF4444]/15 px-2 py-0.5 rounded border border-[#EF4444]/30">
+                        OFFICIAL APPLE
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-[#D4D4DD] leading-relaxed">
+                      iPhone වල Web App එකක් Home Screen එකට දාගන්න ලේසිම සහ නිවැරදිම ක්‍රමය:
+                    </p>
+
+                    <ol className="space-y-2 text-xs text-[#E4E4E7]">
+                      <li className="flex items-center gap-2.5">
+                        <span className="w-5 h-5 rounded-md bg-[#EF4444] text-white font-bold text-[11px] flex items-center justify-center shrink-0">1</span>
+                        <span>Safari toolbar එකේ <strong className="text-white">Share (📤)</strong> icon එක ඔබන්න.</span>
+                      </li>
+                      <li className="flex items-center gap-2.5">
+                        <span className="w-5 h-5 rounded-md bg-[#EF4444] text-white font-bold text-[11px] flex items-center justify-center shrink-0">2</span>
+                        <span>පහලට scroll කරලා <strong className="text-white">&quot;Add to Home Screen&quot; (➕)</strong> ඔබන්න.</span>
+                      </li>
+                    </ol>
+
+                    <p className="text-[11px] text-[#9A9AA6]">
+                      ✓ Fullscreen App · Official Logo · Offline Support · No &quot;Not Signed&quot; warnings
+                    </p>
+                  </div>
+
+                  {/* Alternative iOS Profile Download */}
+                  <div className="p-3.5 rounded-xl bg-[#060609] border border-[#23232B] space-y-2">
+                    <div className="text-[11px] text-[#9A9AA6]">
+                      හෝ Direct Configuration Profile එකෙන් දාගන්න:
+                    </div>
+                    <a
+                      href="./PASIYA-SENSI.mobileconfig"
+                      download="PASIYA-SENSI.mobileconfig"
+                      onClick={() => triggerHaptic('action')}
+                      className="w-full min-h-[42px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#160B0E] border border-[#EF4444]/50 text-white text-xs font-bold hover:bg-[#200D11] transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5 text-[#EF4444]" />
+                      <span>Download iOS Profile (With Red Emblem Logo)</span>
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Web PWA One-Tap Install Option (Android / Chrome Desktop) */}
+              {isInstallable && (
+                <div className="p-3 rounded-xl bg-[#060609] border border-[#23232B] space-y-2">
+                  <div className="text-[11px] text-[#9A9AA6]">
+                    Optional: Install via Chrome Web PWA:
+                  </div>
+                  <button
+                    type="button"
+                    data-testid="confirm-native-install-btn"
+                    onClick={() => {
+                      triggerHaptic('success');
+                      void install().then((ok) => {
+                        if (ok) setShowInstallSheet(false);
+                      });
+                    }}
+                    className="w-full min-h-[40px] inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Add Web Shortcut to Home Screen</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Bottom copy link action */}
+              <div className="pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void handleCopyInstallUrl()}
+                  className="flex-1 min-h-[40px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#141419] border border-[#282832] px-3.5 text-xs font-semibold text-white hover:border-[#3A3A48] transition-colors cursor-pointer"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-[#10B981]" aria-hidden="true" />
+                      <span>Link Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>Copy App Link</span>
+                    </>
+                  )}
+                </button>
+
+                {onFallbackAction && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onFallbackAction();
+                      setShowInstallSheet(false);
+                    }}
+                    className="flex-1 min-h-[40px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#141419] border border-[#282832] px-3.5 text-xs font-semibold text-[#D4D4DD] hover:text-white hover:border-[#3A3A48] transition-colors cursor-pointer"
+                  >
+                    <span>{fallbackLabel}</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

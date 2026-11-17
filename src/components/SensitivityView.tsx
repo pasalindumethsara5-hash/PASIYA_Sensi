@@ -3,9 +3,12 @@ import {
   Check,
   Copy,
   Cpu,
+  Download,
   Flame,
   RotateCcw,
   Save,
+  Share,
+  Smartphone,
   Sparkles,
 } from 'lucide-react';
 import {
@@ -242,6 +245,69 @@ export const SensitivityView: React.FC<SensitivityViewProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* 1-Click Platform Install & APK Download Banner */}
+      {platform === 'android' ? (
+        <div className="p-3.5 rounded-2xl bg-[#0D1C12] border border-[#22C55E]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[0_0_20px_rgba(34,197,94,0.12)]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#22C55E]/15 border border-[#22C55E]/40 flex items-center justify-center shrink-0">
+              <Download className="w-5 h-5 text-[#22C55E]" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-bold text-white">
+                  PASIYA Sensi Android APK (Official Release)
+                </span>
+                <span className="text-[10px] font-mono-num font-bold text-[#22C55E] bg-[#22C55E]/20 px-2 py-0.5 rounded border border-[#22C55E]/30">
+                  FREE FIRE CROSSHAIR READY
+                </span>
+              </div>
+              <p className="text-xs text-[#A7F3D0] mt-0.5">
+                Download and install directly on any Android phone (Verified safe).
+              </p>
+            </div>
+          </div>
+          <a
+            href="./PASIYA-SENSI.apk"
+            download="PASIYA-SENSI.apk"
+            onClick={() => triggerHaptic('success')}
+            className="px-5 py-2.5 rounded-xl bg-[#22C55E] text-black text-xs font-bold hover:bg-[#16A34A] hover:text-white transition-all text-center whitespace-nowrap shrink-0 cursor-pointer shadow-lg inline-flex items-center justify-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download APK (~4.3 MB)</span>
+          </a>
+        </div>
+      ) : (
+        <div className="p-3.5 rounded-2xl bg-[#180C0E] border border-[#EF4444]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[0_0_20px_rgba(239,68,68,0.12)]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EF4444]/15 border border-[#EF4444]/40 flex items-center justify-center shrink-0">
+              <Smartphone className="w-5 h-5 text-[#EF4444]" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-bold text-white">
+                  iPhone Home Screen App Setup
+                </span>
+                <span className="text-[10px] font-mono-num font-bold text-[#EF4444] bg-[#EF4444]/20 px-2 py-0.5 rounded border border-[#EF4444]/30">
+                  SAFARI 2 TAPS
+                </span>
+              </div>
+              <p className="text-xs text-[#FCA5A5] mt-0.5">
+                In Safari: Tap <strong>Share (📤)</strong> &gt; <strong>Add to Home Screen (➕)</strong> for full offline app!
+              </p>
+            </div>
+          </div>
+          <a
+            href="./PASIYA-SENSI.mobileconfig"
+            download="PASIYA-SENSI.mobileconfig"
+            onClick={() => triggerHaptic('action')}
+            className="px-4 py-2.5 rounded-xl bg-[#EF4444] text-white text-xs font-bold hover:bg-[#DC2626] transition-all text-center whitespace-nowrap shrink-0 cursor-pointer shadow-lg inline-flex items-center justify-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download iOS Profile</span>
+          </a>
+        </div>
+      )}
+
       {/* Top Control Bar: Heading, Hardware Auto-Calibrate, Platform & Cap */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
