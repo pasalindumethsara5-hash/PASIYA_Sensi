@@ -7,11 +7,28 @@
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   }
 
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: none;
+  }
+
   body {
     font-family: var(--font-body);
     background-color: #050507;
     color: #FFFFFF;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
+  }
+
+  /* 120Hz Android Smooth Compositing */
+  main {
+    transform: translateZ(0);
+    will-change: scroll-position;
   }
 
   h1, h2, h3, h4, .font-display {
@@ -72,22 +89,40 @@
 
 /* Frosted Glass Navigation Bar */
 .glass-navbar {
-  background: rgba(5, 5, 8, 0.7) !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  background: rgba(5, 5, 8, 0.8) !important;
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.55), inset 0 -1px 0 0 rgba(255, 255, 255, 0.06) !important;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 /* Frosted Glass Mobile Bottom Navigation Bar */
 .glass-bottom-bar {
-  background: rgba(5, 5, 8, 0.78) !important;
-  backdrop-filter: blur(32px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
+  background: rgba(5, 5, 8, 0.85) !important;
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: 
     0 -12px 36px 0 rgba(0, 0, 0, 0.65),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.12) !important;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Universal Android Hardware Accelerated Smooth Scrolling */
+@media screen and (max-width: 768px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .glass-panel,
+  .glass-panel-crimson,
+  .glass-panel-emerald {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+  }
 }
 
 /* Precision Glass Range Slider styling */

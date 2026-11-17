@@ -20,6 +20,11 @@ export const AnimatedBackdrop: React.FC = () => {
     <div
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#050507]"
+      style={{
+        transform: 'translate3d(0, 0, 0)',
+        contain: 'strict',
+        willChange: 'transform',
+      }}
     >
       {/* Drifting Radiant Crimson, Ruby & Violet Depth Orbs for Frosted Glass Refraction */}
       <div
@@ -122,7 +127,13 @@ export const AnimatedBackdrop: React.FC = () => {
       </svg>
 
       {/* Diagonal Red-to-White Tactical Sweep Beam */}
-      <div className="backdrop-scan absolute -top-1/2 left-0 w-48 h-[200%] bg-gradient-to-r from-transparent via-[#EF4444]/[0.08] to-white/[0.045] blur-2xl" />
+      <div
+        className="backdrop-scan absolute -top-1/2 left-0 w-48 h-[200%] pointer-events-none"
+        style={{
+          background: 'linear-gradient(90deg, transparent 0%, rgba(239, 68, 68, 0.06) 50%, transparent 100%)',
+          transform: 'translate3d(0, 0, 0)',
+        }}
+      />
 
       {/* Horizontal Tactical Target-Lock Scanline */}
       <div className="ff-scanline-y absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#EF4444]/65 to-transparent shadow-[0_0_16px_rgba(239,68,68,0.55)]" />

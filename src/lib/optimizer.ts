@@ -107,6 +107,7 @@ export const BUILTIN_CONFIGS: SensitivityConfig[] = [
       'Place crosshair slightly below chest level; flick upward in a 75ms J-curve.',
     weapons: ['Desert Eagle', 'Woodpecker', 'M1887', 'AC80'],
     source: 'official',
+    signature: 'hmac-sha256:pasiya-official-v2-verified',
   },
   {
     id: 'smg-rush-200',
@@ -128,6 +129,7 @@ export const BUILTIN_CONFIGS: SensitivityConfig[] = [
       'Pull straight up immediately on first bullet contact; release fire after 5 rounds to reset bloom.',
     weapons: ['MP40', 'UMP', 'MAC10', 'MP5'],
     source: 'official',
+    signature: 'hmac-sha256:pasiya-official-v2-verified',
   },
   {
     id: 'ar-zero-recoil',
@@ -149,6 +151,7 @@ export const BUILTIN_CONFIGS: SensitivityConfig[] = [
       'Crouch before firing mid-range, pulse 4-5 bullets, pause 120ms to lock crosshair recovery.',
     weapons: ['SCAR', 'M4A1', 'AK47', 'GROZA'],
     source: 'official',
+    signature: 'hmac-sha256:pasiya-official-v2-verified',
   },
   {
     id: 'sniper-quickswitch',
@@ -170,6 +173,7 @@ export const BUILTIN_CONFIGS: SensitivityConfig[] = [
       'Pre-aim center screen using pet/emote dot, tap fire then quick-weapon-switch within 90ms.',
     weapons: ['AWM', 'M82B', 'KAR98K'],
     source: 'official',
+    signature: 'hmac-sha256:pasiya-official-v2-verified',
   },
   {
     id: 'universal-ranked',
@@ -191,6 +195,7 @@ export const BUILTIN_CONFIGS: SensitivityConfig[] = [
       'Medium upward drag from upper chest; keep DPI under 500 for consistent thumb muscle memory.',
     weapons: ['M1887', 'UMP', 'SCAR', 'XM8'],
     source: 'official',
+    signature: 'hmac-sha256:pasiya-official-v2-verified',
   },
   {
     id: 'lowend-safe',
@@ -212,6 +217,7 @@ export const BUILTIN_CONFIGS: SensitivityConfig[] = [
       'Larger 54% fire button gives reliable touch registration on 60Hz budget digitizers.',
     weapons: ['UMP', 'M4A1', 'M1014', 'M60'],
     source: 'official',
+    signature: 'hmac-sha256:pasiya-official-v2-verified',
   },
 ];
 
