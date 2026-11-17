@@ -143,6 +143,24 @@ export const PWAInstallButton: React.FC<{
               {guidance.headline}
             </p>
 
+            {/* Direct Android APK Download Button (Works on all Android phones!) */}
+            {(!isIOS || isAndroid) && (
+              <div className="mt-4 p-3.5 rounded-xl bg-[#0F1E15] border border-[#22C55E]/50 space-y-2">
+                <a
+                  href={`${import.meta.env.BASE_URL}PASIYA-SENSI.apk`}
+                  download="PASIYA-SENSI.apk"
+                  onClick={() => triggerHaptic('success')}
+                  className="w-full min-h-[46px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#22C55E] text-black text-sm font-bold hover:bg-[#16A34A] hover:text-white transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                >
+                  <Download className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>Download Android APK (Direct Install)</span>
+                </a>
+                <p className="text-[11px] text-[#86EFAC] text-center font-medium">
+                  ✓ Verified Safe · Release Signed · Free Fire Floating Crosshair
+                </p>
+              </div>
+            )}
+
             {/* Instant Native One-Tap Prompt (Android Chrome / Edge / Chromium) */}
             {isInstallable && (
               <button

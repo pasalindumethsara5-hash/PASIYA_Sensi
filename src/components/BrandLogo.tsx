@@ -7,8 +7,7 @@ interface BrandLogoProps {
   fullEmblem?: boolean;
 }
 
-export const UPLOADED_LOGO_SRC =
-  '/assets/aistudio/WhatsApp_Image_2026-11-16_at_21.31.34_c27237fd.jpeg';
+export const UPLOADED_LOGO_SRC = './logo.png';
 
 /**
  * Displays the user's uploaded MP Free Fire emblem framed in a crisp black-and-red

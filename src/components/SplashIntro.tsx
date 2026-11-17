@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Mail } from 'lucide-react';
-import { UPLOADED_LOGO_SRC } from './BrandLogo';
+import { BrandLogo, UPLOADED_LOGO_SRC } from './BrandLogo';
 import { WhatsAppLogoIcon } from './DeveloperContactCard';
 import {
   OWNER_CONTACT,
@@ -133,37 +133,8 @@ export const SplashIntro: React.FC<SplashIntroProps> = ({ onComplete }) => {
           </svg>
 
           {/* Uploaded MP Free Fire Logo Emblem Frame */}
-          <div className="splash-pm-reveal relative w-36 h-36 sm:w-44 sm:h-44 rounded-3xl bg-black border border-[#EF4444]/70 overflow-hidden shadow-[0_0_64px_rgba(239,68,68,0.42)]">
-            <img
-              src={UPLOADED_LOGO_SRC}
-              alt="MP Free Fire Official Logo"
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-contain p-2 select-none"
-            />
-
-            {/* Diagonal Laser Gleam Sweep Across Logo */}
-            <div
-              aria-hidden="true"
-              className="ff-logo-laser pointer-events-none absolute inset-y-0 w-16 bg-gradient-to-r from-transparent via-white/30 to-[#EF4444]/30 blur-[1px]"
-            />
-
-            {/* Corner Lock Brackets */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#EF4444]"
-            />
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-white/80"
-            />
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-white/80"
-            />
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#EF4444]"
-            />
+          <div className="splash-pm-reveal relative rounded-3xl overflow-hidden shadow-[0_0_64px_rgba(239,68,68,0.42)]">
+            <BrandLogo size={144} fullEmblem animated />
           </div>
         </div>
 
