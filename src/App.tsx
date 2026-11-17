@@ -180,10 +180,20 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<GamerUser | null>(() =>
     getCurrentUser()
   );
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  // Mandatory Login Gate: Force Auth modal open if user is not registered / logged in
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(
+    () => getCurrentUser() === null
+  );
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [availableUpdate, setAvailableUpdate] = useState<AppVersionInfo | null>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+
+  // Sync auth modal visibility when user state changes
+  useEffect(() => {
+    if (currentUser === null) {
+      setShowAuthModal(true);
+    }
+  }, [currentUser]);
 
   // Logo secret 5-click easter egg for Owner Admin Console
   const logoClickCountRef = useRef(0);

@@ -1,8 +1,9 @@
 export interface GamerUser {
   id: string;
   gamerTag: string;
+  password?: string;
   freeFireUid: string;
-  authProvider: 'gamertag' | 'google' | 'apple';
+  authProvider: 'credentials' | 'gamertag' | 'google' | 'apple';
   platform: 'android' | 'ios';
   deviceModel: string;
   registeredAt: string;
@@ -18,10 +19,11 @@ const INITIAL_REGISTRY: GamerUser[] = [
   {
     id: 'u-owner-01',
     gamerTag: 'PASIYA_OFFICIAL',
+    password: 'owner_master_pass',
     freeFireUid: '892174921',
-    authProvider: 'google',
+    authProvider: 'credentials',
     platform: 'android',
-    deviceModel: 'Android 14 (Samsung A54)',
+    deviceModel: 'Samsung Galaxy / Android 14',
     registeredAt: '2026-11-10 14:20',
     lastActive: 'Just now',
     isOwner: true,
@@ -29,8 +31,9 @@ const INITIAL_REGISTRY: GamerUser[] = [
   {
     id: 'u-02',
     gamerTag: 'SHADOW_SNIPER',
+    password: 'sniper_pass_2026',
     freeFireUid: '341908215',
-    authProvider: 'google',
+    authProvider: 'credentials',
     platform: 'android',
     deviceModel: 'Xiaomi Redmi Note 13 Pro',
     registeredAt: '2026-11-12 18:30',
@@ -39,32 +42,13 @@ const INITIAL_REGISTRY: GamerUser[] = [
   {
     id: 'u-03',
     gamerTag: 'VIPER_FF_LK',
+    password: 'viper_pass_ff',
     freeFireUid: '772910432',
-    authProvider: 'apple',
+    authProvider: 'credentials',
     platform: 'ios',
     deviceModel: 'Apple iPhone 15 Pro',
     registeredAt: '2026-11-14 09:15',
     lastActive: '45 mins ago',
-  },
-  {
-    id: 'u-04',
-    gamerTag: 'DRAG_KING_99',
-    freeFireUid: '665123990',
-    authProvider: 'gamertag',
-    platform: 'android',
-    deviceModel: 'Vivo Y200 5G',
-    registeredAt: '2026-11-15 21:04',
-    lastActive: '2 hours ago',
-  },
-  {
-    id: 'u-05',
-    gamerTag: 'GHOST_AIM_IOS',
-    freeFireUid: '109283746',
-    authProvider: 'apple',
-    platform: 'ios',
-    deviceModel: 'Apple iPhone 13',
-    registeredAt: '2026-11-16 11:40',
-    lastActive: '5 hours ago',
   },
 ];
 
@@ -102,7 +86,11 @@ export function setCurrentUser(user: GamerUser | null): void {
       (u) => u.id === user.id || u.gamerTag.toLowerCase() === user.gamerTag.toLowerCase()
     );
     if (existingIndex >= 0) {
-      registry[existingIndex] = { ...registry[existingIndex], ...user, lastActive: 'Just now' };
+      registry[existingIndex] = {
+        ...registry[existingIndex],
+        ...user,
+        lastActive: 'Just now',
+      };
     } else {
       registry.unshift(user);
     }
@@ -110,6 +98,116 @@ export function setCurrentUser(user: GamerUser | null): void {
   } else {
     localStorage.removeItem(STORAGE_KEY_CURRENT_USER);
   }
+}
+
+export function registerNewGamer(params: {
+  gamerTag: string;
+  password?: string;
+  freeFireUid: string;
+  platform: 'android' | 'ios';
+  authProvider?: 'credentials' | 'gamertag' | 'google' | 'apple';
+}): { success: boolean; user?: GamerUser; error?: string } {
+  const cleanTag = params.gamerTag.trim();
+  const cleanUid = params.freeFireUid.trim();
+  const cleanPass = params.password?.trim() || '';
+
+  if (!cleanTag) {
+    return { success: false, error: 'Please enter your Username / GamerTag' };
+  }
+  if (!cleanPass) {
+    return { success: false, error: 'Please enter a Password' };
+  }
+  if (!cleanUid) {
+    return { success: false, error: 'Please enter your Free Fire UID' };
+  }
+
+  const registry = getAllRegisteredUsers();
+  const exists = registry.find(
+    (u) => u.gamerTag.toLowerCase() === cleanTag.toLowerCase()
+  );
+  if (exists) {
+    return {
+      success: false,
+      error: 'Username already registered! Please switch to Login or use another username.',
+    };
+  }
+
+  const deviceModel =
+    typeof navigator !== 'undefined'
+      ? /iPhone/.test(navigator.userAgent)
+        ? 'Apple iPhone (' + (navigator.userAgent.includes('OS 1') ? 'iOS' : 'WebClip') + ')'
+        : /Android/.test(navigator.userAgent)
+        ? 'Android Phone (' + (navigator.userAgent.includes('wv') ? 'APK Native' : 'Mobile Web') + ')'
+        : 'Desktop Gamer Browser'
+      : 'Mobile Handset';
+
+  const now = new Date();
+  const timestampStr =
+    now.getFullYear() +
+    '-' +
+    String(now.getMonth() + 1).padStart(2, '0') +
+    '-' +
+    String(now.getDate()).padStart(2, '0') +
+    ' ' +
+    String(now.getHours()).padStart(2, '0') +
+    ':' +
+    String(now.getMinutes()).padStart(2, '0');
+
+  const newUser: GamerUser = {
+    id: 'u-' + Date.now(),
+    gamerTag: cleanTag,
+    password: cleanPass,
+    freeFireUid: cleanUid,
+    authProvider: params.authProvider || 'credentials',
+    platform: params.platform,
+    deviceModel,
+    registeredAt: timestampStr,
+    lastActive: 'Just now',
+    isOwner: false,
+  };
+
+  setCurrentUser(newUser);
+  return { success: true, user: newUser };
+}
+
+export function loginExistingGamer(params: {
+  gamerTag: string;
+  password?: string;
+}): { success: boolean; user?: GamerUser; error?: string } {
+  const cleanTag = params.gamerTag.trim().toLowerCase();
+  const cleanPass = params.password?.trim() || '';
+
+  if (!cleanTag) {
+    return { success: false, error: 'Please enter your Username' };
+  }
+  if (!cleanPass) {
+    return { success: false, error: 'Please enter your Password' };
+  }
+
+  const registry = getAllRegisteredUsers();
+  const user = registry.find((u) => u.gamerTag.toLowerCase() === cleanTag);
+
+  if (!user) {
+    return {
+      success: false,
+      error: 'No account found with this username. Please Register first!',
+    };
+  }
+
+  if (user.password && user.password !== cleanPass) {
+    return {
+      success: false,
+      error: 'Incorrect Password. Please try again!',
+    };
+  }
+
+  // Update last active
+  const updatedUser: GamerUser = {
+    ...user,
+    lastActive: 'Just now',
+  };
+  setCurrentUser(updatedUser);
+  return { success: true, user: updatedUser };
 }
 
 export function removeUserFromRegistry(userId: string): GamerUser[] {

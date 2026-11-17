@@ -28,72 +28,46 @@
    GLASSMORPHISM & FROSTED GLASS UI DESIGN SYSTEM (Dark Crimson Theme)
    ========================================================================== */
 
-/* Universal Frosted Glass Card Panels */
-.glass-panel,
-[class*="bg-[#0B0B0F]"],
-.bg-\[\#0B0B0F\] {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(13, 13, 20, 0.72) 100%) !important;
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+/* Universal Frosted Glass Card Panels (Only on .glass-panel) */
+.glass-panel {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(13, 13, 20, 0.72) 100%);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 
-    0 12px 36px 0 rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.16) !important;
+    0 8px 32px 0 rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
 }
 
 /* Crimson Frosted Glass Panels (Active / Highlights) */
-.glass-panel-crimson,
-[class*="bg-[#160B0E]"],
-.bg-\[\#160B0E\],
-[class*="bg-[#190B0E]"],
-.bg-\[\#190B0E\],
-[class*="bg-[#12090C]"],
-.bg-\[\#12090C\],
-[class*="bg-[#1A0D10]"],
-.bg-\[\#1A0D10\] {
-  background: linear-gradient(145deg, rgba(239, 68, 68, 0.16) 0%, rgba(26, 11, 15, 0.8) 100%) !important;
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(239, 68, 68, 0.42) !important;
+.glass-panel-crimson {
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.14) 0%, rgba(26, 11, 15, 0.8) 100%);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(239, 68, 68, 0.4);
   box-shadow: 
-    0 12px 36px 0 rgba(239, 68, 68, 0.22),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.22) !important;
+    0 8px 32px 0 rgba(239, 68, 68, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
 }
 
 /* Emerald Frosted Glass Panels (Verified / Safe Badges) */
-.glass-panel-emerald,
-[class*="bg-[#0D1C12]"],
-.bg-\[\#0D1C12\],
-[class*="bg-[#0F1E15]"],
-.bg-\[\#0F1E15\] {
-  background: linear-gradient(145deg, rgba(34, 197, 94, 0.16) 0%, rgba(10, 26, 16, 0.8) 100%) !important;
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(34, 197, 94, 0.42) !important;
+.glass-panel-emerald {
+  background: linear-gradient(145deg, rgba(34, 197, 94, 0.14) 0%, rgba(10, 26, 16, 0.8) 100%);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(34, 197, 94, 0.4);
   box-shadow: 
-    0 12px 36px 0 rgba(34, 197, 94, 0.22),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.22) !important;
+    0 8px 32px 0 rgba(34, 197, 94, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
 }
 
-/* Inset Frosted Glass Sub-wells & Backgrounds */
-.glass-well,
-[class*="bg-[#060609]"],
-.bg-\[\#060609\],
-[class*="bg-[#07070A]"],
-.bg-\[\#07070A\],
-[class*="bg-[#050507]"],
-.bg-\[\#050507\],
-[class*="bg-[#111116]"],
-.bg-\[\#111116\],
-[class*="bg-[#141419]"],
-.bg-\[\#141419\] {
-  background: rgba(0, 0, 0, 0.5) !important;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border-color: rgba(255, 255, 255, 0.09) !important;
+/* Inset Frosted Glass Sub-wells */
+.glass-well {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
-    inset 0 2px 6px 0 rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+    inset 0 2px 6px 0 rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
 }
 
 /* Frosted Glass Navigation Bar */

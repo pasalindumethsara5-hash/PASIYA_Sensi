@@ -22,10 +22,30 @@ export const AnimatedBackdrop: React.FC = () => {
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#050507]"
     >
       {/* Drifting Radiant Crimson, Ruby & Violet Depth Orbs for Frosted Glass Refraction */}
-      <div className="ambient-glow-a absolute -top-40 -left-24 w-[700px] h-[700px] rounded-full bg-gradient-to-tr from-[#EF4444]/28 via-[#DC2626]/20 to-transparent blur-[140px]" />
-      <div className="ambient-glow-b absolute top-1/4 -right-32 w-[620px] h-[620px] rounded-full bg-gradient-to-bl from-[#F43F5E]/22 via-[#EF4444]/15 to-transparent blur-[135px]" />
-      <div className="ambient-glow-a absolute top-2/3 -left-36 w-[560px] h-[560px] rounded-full bg-gradient-to-tr from-[#8B5CF6]/14 via-[#EF4444]/10 to-transparent blur-[150px]" />
-      <div className="ambient-glow-b absolute -bottom-48 right-16 w-[640px] h-[640px] rounded-full bg-gradient-to-tl from-[#F59E0B]/14 via-white/[0.06] to-transparent blur-[140px]" />
+      <div
+        className="ambient-glow-a absolute -top-40 -left-24 w-[600px] h-[600px] rounded-full pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, rgba(239, 68, 68, 0.18) 0%, rgba(220, 38, 38, 0.06) 50%, transparent 70%)',
+        }}
+      />
+      <div
+        className="ambient-glow-b absolute top-1/4 -right-32 w-[550px] h-[550px] rounded-full pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, rgba(244, 63, 94, 0.14) 0%, rgba(239, 68, 68, 0.05) 50%, transparent 70%)',
+        }}
+      />
+      <div
+        className="ambient-glow-a absolute top-2/3 -left-36 w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, rgba(239, 68, 68, 0.04) 50%, transparent 70%)',
+        }}
+      />
+      <div
+        className="ambient-glow-b absolute -bottom-48 right-16 w-[550px] h-[550px] rounded-full pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, rgba(255, 255, 255, 0.03) 50%, transparent 70%)',
+        }}
+      />
 
       {/* Precision Dark-Black Rangefinder Grid with White/Red Hairlines */}
       <div

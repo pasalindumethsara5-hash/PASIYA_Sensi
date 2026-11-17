@@ -8,8 +8,8 @@ export interface AppVersionInfo {
   changelog: string[];
 }
 
-export const CURRENT_APP_VERSION = '2.0.0';
-export const CURRENT_APP_CODE = 200;
+export const CURRENT_APP_VERSION = '2.1.0';
+export const CURRENT_APP_CODE = 210;
 
 const REMOTE_VERSION_URL =
   'https://pasalindumethsara5-hash.github.io/PASIYA_Sensi/version.json';
