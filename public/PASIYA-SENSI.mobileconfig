@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>FullScreen</key>
+            <true/>
+            <key>IsRemovable</key>
+            <true/>
+            <key>Label</key>
+            <string>PASIYA SENSI</string>
+            <key>PayloadDescription</key>
+            <string>Free Fire Optimizer &amp; Sensitivity Tool</string>
+            <key>PayloadDisplayName</key>
+            <string>PASIYA SENSI</string>
+            <key>PayloadIdentifier</key>
+            <string>com.pasiya.sensi.webclip</string>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadUUID</key>
+            <string>B4190DF4-E6E4-4BC3-83CD-5B1D2CE97FA0</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>Precomposed</key>
+            <true/>
+            <key>URL</key>
+            <string>https://pasalindumethsara5-hash.github.io/PASIYA_Sensi/</string>
+        </dict>
+    </array>
+    <key>PayloadDisplayName</key>
+    <string>PASIYA SENSI</string>
+    <key>PayloadIdentifier</key>
+    <string>com.pasiya.sensi.profile</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>4B6EFA42-4BF3-4908-AE27-8E5A73F1321D</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>
