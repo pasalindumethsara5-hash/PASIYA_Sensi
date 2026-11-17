@@ -48,6 +48,9 @@
     }
   </script>
 
+  <!-- Three.js CDN for Interactive 3D WebGL Hologram Core -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -91,6 +94,51 @@
       0%, 100% { transform: translateY(0) scale(1); }
       50% { transform: translateY(-6px) scale(1.04); }
     }
+
+    /* 3D Perspective & Transform Engine */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .perspective-1500 {
+      perspective: 1500px;
+    }
+    .preserve-3d {
+      transform-style: preserve-3d;
+    }
+    .card-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease-out;
+      position: relative;
+    }
+    .card-glare {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.14) 0%, transparent 65%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 10;
+    }
+    .card-3d:hover .card-glare {
+      opacity: 1;
+    }
+
+    /* Futuristic Scanline Animation for Phone */
+    @keyframes scanlineBeam {
+      0% { top: 0%; opacity: 0.8; }
+      50% { opacity: 1; }
+      100% { top: 100%; opacity: 0.1; }
+    }
+    .scanline-beam {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.95), transparent);
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.9);
+      animation: scanlineBeam 3s linear infinite;
+    }
   </style>
 </head>
 <body class="relative selection:bg-[#EF4444] selection:text-white pb-16 sm:pb-0">
@@ -126,14 +174,14 @@
 
       <!-- Desktop Links -->
       <nav class="hidden md:flex items-center gap-6 text-xs font-semibold text-[#D4D4DD]">
-        <a href="#features" class="hover:text-white transition-colors">Features</a>
-        <a href="#calculator" class="hover:text-[#EF4444] transition-colors flex items-center gap-1">
-          <span>Sensi Tool</span>
-          <span class="text-[9px] bg-red-600/30 text-red-400 px-1.5 py-0.2 rounded font-mono">NEW</span>
+        <a href="#three-core" class="hover:text-[#EF4444] transition-colors flex items-center gap-1">
+          <span>3D Tactical Core</span>
+          <span class="text-[9px] bg-red-600/30 text-red-400 px-1.5 py-0.2 rounded font-mono">3D</span>
         </a>
         <a href="#download" class="hover:text-white transition-colors">Download</a>
-        <a href="#guide" class="hover:text-white transition-colors">Install Guide</a>
+        <a href="#calculator" class="hover:text-white transition-colors">Sensi Tool</a>
         <a href="#weapons" class="hover:text-white transition-colors">Weapons</a>
+        <a href="#guide" class="hover:text-white transition-colors">Install Guide</a>
         <a href="#contact" class="hover:text-[#25D366] transition-colors">Contact</a>
       </nav>
 
@@ -161,7 +209,7 @@
 
     <!-- Main Title -->
     <h1 class="font-display font-black text-4xl sm:text-6xl md:text-7xl text-white tracking-tight leading-[1.08] max-w-4xl mx-auto">
-      Lock 100% Drag Headshots with <span class="bg-gradient-to-r from-[#EF4444] via-[#F87171] to-[#FCA5A5] bg-clip-text text-transparent">Pro Sensitivity</span>
+      Lock 100% Drag Headshots with <span class="bg-gradient-to-r from-[#EF4444] via-[#F87171] to-[#FCA5A5] bg-clip-text text-transparent">3D Pro Sensitivity</span>
     </h1>
 
     <!-- Subtitle -->
@@ -172,13 +220,14 @@
     <!-- Call to Actions -->
     <div id="download" class="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-xl mx-auto">
       <!-- Android Download -->
-      <a href="./PASIYA-SENSI.apk" download="PASIYA-SENSI.apk" class="w-full sm:w-auto flex-1 p-4 rounded-2xl bg-[#0D1C12] border-2 border-[#22C55E] hover:bg-[#16A34A] text-white transition-all shadow-[0_0_25px_rgba(34,197,94,0.35)] group flex items-center justify-center gap-3 cursor-pointer">
-        <div class="w-10 h-10 rounded-xl bg-[#22C55E]/20 flex items-center justify-center shrink-0">
+      <a href="./PASIYA-SENSI.apk" download="PASIYA-SENSI.apk" class="card-3d w-full sm:w-auto flex-1 p-4 rounded-2xl bg-[#0D1C12] border-2 border-[#22C55E] hover:bg-[#16A34A] text-white transition-all shadow-[0_0_25px_rgba(34,197,94,0.35)] group flex items-center justify-center gap-3 cursor-pointer">
+        <div class="card-glare"></div>
+        <div class="w-10 h-10 rounded-xl bg-[#22C55E]/20 flex items-center justify-center shrink-0 relative z-20">
           <svg class="w-6 h-6 text-[#22C55E] group-hover:text-black transition-colors" fill="currentColor" viewBox="0 0 24 24">
             <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0001s.4482-1.0001.9993-1.0001c.5516 0 .9998.4486.9998 1.0001s-.4482 1.0001-.9998 1.0001m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0001s.4482-1.0001.9993-1.0001c.5516 0 .9998.4486.9998 1.0001s-.4482 1.0001-.9998 1.0001m11.405-6.02l1.997-3.459a.416.416 0 00-.152-.567.416.416 0 00-.568.152l-2.022 3.503c-1.637-.749-3.473-1.168-5.437-1.168-1.964 0-3.8.419-5.437 1.168L4.238 5.4474a.416.416 0 00-.568-.152.416.416 0 00-.152.567l1.997 3.459C2.688 10.9784 1 14.2804 1 18h22c0-3.7196-1.688-7.0216-4.518-8.6786"/>
           </svg>
         </div>
-        <div class="text-left">
+        <div class="text-left relative z-20">
           <div class="text-[10px] uppercase font-mono text-[#22C55E] font-bold tracking-wider">OFFICIAL RELEASE</div>
           <div class="text-base font-extrabold text-white">Download Android APK</div>
           <div class="text-[11px] text-[#A7F3D0]">v2.1.0 · ~4.5 MB · Verified Safe</div>
@@ -186,13 +235,14 @@
       </a>
 
       <!-- iPhone Download -->
-      <a href="./PASIYA-SENSI.mobileconfig" download="PASIYA-SENSI.mobileconfig" class="w-full sm:w-auto flex-1 p-4 rounded-2xl bg-[#180C0E] border-2 border-[#EF4444] hover:bg-[#DC2626] text-white transition-all shadow-[0_0_25px_rgba(239,68,68,0.35)] group flex items-center justify-center gap-3 cursor-pointer">
-        <div class="w-10 h-10 rounded-xl bg-[#EF4444]/20 flex items-center justify-center shrink-0">
+      <a href="./PASIYA-SENSI.mobileconfig" download="PASIYA-SENSI.mobileconfig" class="card-3d w-full sm:w-auto flex-1 p-4 rounded-2xl bg-[#180C0E] border-2 border-[#EF4444] hover:bg-[#DC2626] text-white transition-all shadow-[0_0_25px_rgba(239,68,68,0.35)] group flex items-center justify-center gap-3 cursor-pointer">
+        <div class="card-glare"></div>
+        <div class="w-10 h-10 rounded-xl bg-[#EF4444]/20 flex items-center justify-center shrink-0 relative z-20">
           <svg class="w-6 h-6 text-[#EF4444] group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
             <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.2c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.64 1.35-.57.65-1.07 1.72-.94 2.74 1 .08 2.03-.51 2.66-1.24"/>
           </svg>
         </div>
-        <div class="text-left">
+        <div class="text-left relative z-20">
           <div class="text-[10px] uppercase font-mono text-[#EF4444] font-bold tracking-wider">FULLSCREEN APP</div>
           <div class="text-base font-extrabold text-white">Install for iPhone (iOS)</div>
           <div class="text-[11px] text-[#FCA5A5]">Settings Profile · 0 Safari Bars</div>
@@ -208,30 +258,210 @@
       </a>
     </div>
 
+    <!-- 3D INTERACTIVE TACTICAL HOLOGRAM & MOBILE SHOWCASE (CLAUDE-STYLE 3D UI) -->
+    <div id="three-core" class="mt-12 sm:mt-16 max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <!-- Left: Three.js Interactive 3D Hologram Core (7 cols) -->
+        <div class="lg:col-span-7 text-left">
+          <div class="relative card-3d glass-card-crimson rounded-3xl p-5 sm:p-7 border border-[#EF4444]/40 overflow-hidden shadow-[0_20px_60px_rgba(239,68,68,0.25)]">
+            <div class="card-glare"></div>
+
+            <!-- Tactical HUD Header -->
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/10 relative z-20">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-ping"></span>
+                <span class="text-[11px] font-mono font-black uppercase text-[#FCA5A5] tracking-widest">
+                  TACTICAL 3D HOLOGRAM // GYRO CORE
+                </span>
+              </div>
+              <span id="holo-status-text" class="text-[10px] font-mono font-bold text-[#EF4444] bg-[#EF4444]/20 px-2.5 py-0.5 rounded border border-[#EF4444]/40 transition-colors">
+                CALIBRATING 120Hz
+              </span>
+            </div>
+
+            <!-- WebGL 3D Canvas Container -->
+            <div id="three-hologram-container" class="relative w-full h-[320px] sm:h-[380px] rounded-2xl bg-black/70 border border-white/10 flex items-center justify-center cursor-grab active:cursor-grabbing overflow-hidden group select-none">
+              
+              <!-- HUD Targeting Overlay Elements -->
+              <div class="pointer-events-none absolute inset-3 border border-white/5 rounded-xl"></div>
+              <div class="pointer-events-none absolute top-3 left-3 text-[9px] font-mono text-[#EF4444]/90 tracking-wider">
+                SYS::RECOIL_DAMP [ACTIVE]<br>AXIS::X/Y/Z [3D ONLINE]
+              </div>
+              <div class="pointer-events-none absolute top-3 right-3 text-[9px] font-mono text-right text-[#22C55E]/90 tracking-wider">
+                TOUCH_SAMPLE::1000/s<br>GLIDING_DELAY::0.04ms
+              </div>
+              <div class="pointer-events-none absolute bottom-3 left-3 text-[9px] font-mono text-[#9A9AA6] flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-[#EF4444] animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                <span>Touch / Drag to Rotate in 3D</span>
+              </div>
+
+              <!-- Three.js Canvas -->
+              <canvas id="three-hologram-canvas" class="w-full h-full block"></canvas>
+            </div>
+
+            <!-- Interactive HUD Control Pill Bar -->
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs relative z-20">
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="triggerAimLockAnim()" class="px-3 py-1.5 rounded-lg bg-[#EF4444] hover:bg-[#DC2626] text-white text-[11px] font-extrabold flex items-center gap-1.5 transition-all shadow-[0_0_12px_rgba(239,68,68,0.4)] active:scale-95">
+                  <span>🎯 Aim-Lock Test</span>
+                </button>
+                <button type="button" onclick="triggerHoloPulse()" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all active:scale-95">
+                  <span>⚡ EMP Pulse</span>
+                </button>
+                <button type="button" onclick="toggleHoloSpin()" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all active:scale-95">
+                  <span>🌀 Spin:</span>
+                  <span id="holo-speed-lbl" class="text-[#EAB308]">NORMAL</span>
+                </button>
+              </div>
+              <span class="text-[10px] text-[#9A9AA6] font-mono hidden sm:inline">Interactive Three.js 3D Engine</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: 3D Floating Mobile Smartphone Showcase (5 cols) -->
+        <div class="lg:col-span-5 flex justify-center perspective-1500 py-6">
+          <div id="phone-3d-container" class="relative group cursor-pointer" style="perspective: 1200px;">
+            
+            <!-- Phone 3D Outer Shell with dynamic tilt -->
+            <div id="phone-3d-mockup" class="relative w-[280px] sm:w-[310px] h-[580px] rounded-[48px] bg-[#0E0E14] border-[7px] border-[#2A2A38] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95),0_0_40px_rgba(239,68,68,0.35)] transition-transform duration-200 ease-out preserve-3d" style="transform: rotateX(6deg) rotateY(-12deg);">
+              
+              <!-- Dynamic Specular Reflection Glare -->
+              <div class="pointer-events-none absolute inset-0 rounded-[40px] bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-60 z-30"></div>
+
+              <!-- Phone Dynamic Island & Ear Speaker -->
+              <div class="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 rounded-full bg-black z-30 flex items-center justify-center gap-2 border border-white/10">
+                <div class="w-2.5 h-2.5 rounded-full bg-[#181820]"></div>
+                <div class="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse"></div>
+              </div>
+
+              <!-- Phone Screen Content (In-App Sensi UI) -->
+              <div class="relative w-full h-full rounded-[40px] overflow-hidden bg-[#07070B] p-4 text-left flex flex-col justify-between pt-10 pb-6 border border-white/10">
+                
+                <!-- Laser Scanning Beam Effect -->
+                <div class="scanline-beam z-20"></div>
+
+                <!-- Top App Bar -->
+                <div>
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-1.5">
+                      <div class="w-6 h-6 rounded-md bg-[#EF4444] p-0.5 flex items-center justify-center">
+                        <img src="./logo.png" alt="Logo" class="w-full h-full object-cover" />
+                      </div>
+                      <span class="font-display font-extrabold text-xs text-white">PASIYA Sensi</span>
+                    </div>
+                    <span class="text-[9px] font-mono font-bold text-[#22C55E] bg-[#22C55E]/15 px-1.5 py-0.5 rounded border border-[#22C55E]/30">
+                      120 FPS LOCK
+                    </span>
+                  </div>
+
+                  <!-- Live Reticle Preview Widget -->
+                  <div class="p-3 rounded-xl bg-black/60 border border-[#EF4444]/30 relative mb-3">
+                    <div class="text-[10px] font-mono text-[#FCA5A5] flex items-center justify-between mb-1">
+                      <span>RETICLE ALIGNMENT</span>
+                      <span class="text-[#22C55E]">OPTIMAL</span>
+                    </div>
+                    <!-- Crosshair graphic -->
+                    <div class="h-20 relative flex items-center justify-center">
+                      <div class="w-12 h-12 rounded-full border border-[#EF4444]/40 animate-ping absolute"></div>
+                      <div class="w-8 h-8 rounded-full border border-dashed border-[#EF4444]/80 flex items-center justify-center">
+                        <div class="w-1.5 h-1.5 rounded-full bg-[#EF4444] shadow-[0_0_8px_#EF4444]"></div>
+                      </div>
+                      <div class="absolute w-16 h-0.5 bg-[#EF4444]/30"></div>
+                      <div class="absolute h-16 w-0.5 bg-[#EF4444]/30"></div>
+                    </div>
+                  </div>
+
+                  <!-- Live Sensi Metrics -->
+                  <div class="space-y-2 text-xs">
+                    <div class="p-2 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between">
+                      <span class="text-[#9A9AA6] text-[11px]">General Sensitivity</span>
+                      <span class="font-mono font-extrabold text-[#EF4444]">198 / 200</span>
+                    </div>
+                    <div class="p-2 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between">
+                      <span class="text-[#9A9AA6] text-[11px]">Red Dot Sight</span>
+                      <span class="font-mono font-extrabold text-white">194</span>
+                    </div>
+                    <div class="p-2 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between">
+                      <span class="text-[#9A9AA6] text-[11px]">2x / 4x Scope</span>
+                      <span class="font-mono font-extrabold text-[#EAB308]">184 / 176</span>
+                    </div>
+                    <div class="p-2 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between">
+                      <span class="text-[#9A9AA6] text-[11px]">DPI Multiplier</span>
+                      <span class="font-mono font-extrabold text-[#22C55E]">520 (Gliding)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bottom In-App Action Bar -->
+                <div>
+                  <div class="w-full py-2.5 rounded-xl bg-[#EF4444] text-white text-xs font-bold text-center shadow-[0_0_15px_rgba(239,68,68,0.5)]">
+                    APPLY SENSI PROFILE
+                  </div>
+                  <div class="text-[9px] text-[#6A6A78] text-center mt-2 font-mono">
+                    Free Fire OB44 Matched · Zero Ban
+                  </div>
+                </div>
+              </div>
+
+              <!-- FLOATING 3D DEPTH BADGES (translateZ popping forward!) -->
+              <!-- Badge 1: Top-Left Floating Badge -->
+              <div class="absolute -top-4 -left-6 px-3 py-2 rounded-xl bg-black/90 backdrop-blur-md border border-[#22C55E]/60 shadow-[0_10px_25px_rgba(0,0,0,0.8)] text-left preserve-3d" style="transform: translateZ(55px);">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></span>
+                  <span class="text-[10px] font-mono font-black text-[#22C55E]">ANTIBAN LOCK</span>
+                </div>
+                <div class="text-[11px] font-extrabold text-white">100% Verified Safe</div>
+              </div>
+
+              <!-- Badge 2: Right Middle Floating Badge -->
+              <div class="absolute top-1/3 -right-8 px-3.5 py-2 rounded-xl bg-black/90 backdrop-blur-md border border-[#EF4444]/60 shadow-[0_10px_25px_rgba(0,0,0,0.8)] text-left preserve-3d" style="transform: translateZ(65px);">
+                <div class="text-[10px] font-mono font-black text-[#EF4444]">J-CURVE 75MS</div>
+                <div class="text-[11px] font-extrabold text-white">Vertical Drag Assist</div>
+              </div>
+
+              <!-- Badge 3: Bottom Left Floating Badge -->
+              <div class="absolute -bottom-4 -left-4 px-3.5 py-2 rounded-xl bg-black/90 backdrop-blur-md border border-[#EAB308]/60 shadow-[0_10px_25px_rgba(0,0,0,0.8)] text-left preserve-3d" style="transform: translateZ(75px);">
+                <div class="text-[10px] font-mono font-black text-[#EAB308]">120Hz PROMOTION</div>
+                <div class="text-[11px] font-extrabold text-white">Ultra Touch Refresh</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- Social Proof Badges -->
     <div class="mt-12 pt-8 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
-      <div class="glass-card p-3.5 rounded-xl">
-        <div class="text-2xl font-black text-white font-mono-num">50,000+</div>
-        <div class="text-xs text-[#9A9AA6] mt-0.5">Players Calibrated</div>
+      <div class="card-3d glass-card p-3.5 rounded-xl">
+        <div class="card-glare"></div>
+        <div class="text-2xl font-black text-white font-mono-num relative z-20">50,000+</div>
+        <div class="text-xs text-[#9A9AA6] mt-0.5 relative z-20">Players Calibrated</div>
       </div>
-      <div class="glass-card p-3.5 rounded-xl">
-        <div class="text-2xl font-black text-[#22C55E] font-mono-num">100%</div>
-        <div class="text-xs text-[#9A9AA6] mt-0.5">Antiban Verified</div>
+      <div class="card-3d glass-card p-3.5 rounded-xl">
+        <div class="card-glare"></div>
+        <div class="text-2xl font-black text-[#22C55E] font-mono-num relative z-20">100%</div>
+        <div class="text-xs text-[#9A9AA6] mt-0.5 relative z-20">Antiban Verified</div>
       </div>
-      <div class="glass-card p-3.5 rounded-xl">
-        <div class="text-2xl font-black text-[#EF4444] font-mono-num">120 FPS</div>
-        <div class="text-xs text-[#9A9AA6] mt-0.5">Hardware Matched</div>
+      <div class="card-3d glass-card p-3.5 rounded-xl">
+        <div class="card-glare"></div>
+        <div class="text-2xl font-black text-[#EF4444] font-mono-num relative z-20">120 FPS</div>
+        <div class="text-xs text-[#9A9AA6] mt-0.5 relative z-20">Hardware Matched</div>
       </div>
-      <div class="glass-card p-3.5 rounded-xl">
-        <div class="text-2xl font-black text-[#EAB308] font-mono-num">4.9 / 5</div>
-        <div class="text-xs text-[#9A9AA6] mt-0.5">Gamer Rating ★★★★★</div>
+      <div class="card-3d glass-card p-3.5 rounded-xl">
+        <div class="card-glare"></div>
+        <div class="text-2xl font-black text-[#EAB308] font-mono-num relative z-20">4.9 / 5</div>
+        <div class="text-xs text-[#9A9AA6] mt-0.5 relative z-20">Gamer Rating ★★★★★</div>
       </div>
     </div>
   </section>
 
   <!-- Interactive Live Sensi Calculator Widget (NEW!) -->
   <section id="calculator" class="relative z-10 py-12 px-4 sm:px-6 max-w-4xl mx-auto">
-    <div class="glass-card-crimson rounded-3xl p-6 sm:p-8 border border-[#EF4444]/40 shadow-[0_12px_40px_rgba(239,68,68,0.2)]">
+    <div class="card-3d glass-card-crimson rounded-3xl p-6 sm:p-8 border border-[#EF4444]/40 shadow-[0_12px_40px_rgba(239,68,68,0.2)]">
+      <div class="card-glare"></div>
       <div class="text-center max-w-xl mx-auto mb-6">
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EF4444]/20 border border-[#EF4444]/40 text-[#FCA5A5] text-[10px] font-bold uppercase font-mono mb-2">
           ⚡ Interactive Live Calibrator
@@ -312,12 +542,13 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- Weapon 1 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10 hover:border-[#EF4444]/50 transition-all">
-        <div class="flex items-center justify-between mb-2">
+      <div class="card-3d glass-card p-4 rounded-2xl border border-white/10 hover:border-[#EF4444]/50 transition-all">
+        <div class="card-glare"></div>
+        <div class="flex items-center justify-between mb-2 relative z-20">
           <span class="text-xs font-bold text-white">Desert Eagle</span>
           <span class="text-[10px] font-mono font-bold text-[#EF4444] bg-[#EF4444]/20 px-1.5 py-0.2 rounded">1-TAP GOD</span>
         </div>
-        <div class="text-[11px] text-[#9A9AA6] space-y-1">
+        <div class="text-[11px] text-[#9A9AA6] space-y-1 relative z-20">
           <div class="flex justify-between"><span>General:</span><strong class="text-white font-mono">198</strong></div>
           <div class="flex justify-between"><span>Red Dot:</span><strong class="text-white font-mono">194</strong></div>
           <div class="flex justify-between"><span>DPI:</span><strong class="text-[#22C55E] font-mono">500</strong></div>
@@ -326,12 +557,13 @@
       </div>
 
       <!-- Weapon 2 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10 hover:border-[#EF4444]/50 transition-all">
-        <div class="flex items-center justify-between mb-2">
+      <div class="card-3d glass-card p-4 rounded-2xl border border-white/10 hover:border-[#EF4444]/50 transition-all">
+        <div class="card-glare"></div>
+        <div class="flex items-center justify-between mb-2 relative z-20">
           <span class="text-xs font-bold text-white">M1887 (Shotgun)</span>
           <span class="text-[10px] font-mono font-bold text-[#22C55E] bg-[#22C55E]/20 px-1.5 py-0.2 rounded">CLOSE RUSH</span>
         </div>
-        <div class="text-[11px] text-[#9A9AA6] space-y-1">
+        <div class="text-[11px] text-[#9A9AA6] space-y-1 relative z-20">
           <div class="flex justify-between"><span>General:</span><strong class="text-white font-mono">200 (MAX)</strong></div>
           <div class="flex justify-between"><span>Red Dot:</span><strong class="text-white font-mono">196</strong></div>
           <div class="flex justify-between"><span>DPI:</span><strong class="text-[#22C55E] font-mono">540</strong></div>
@@ -340,12 +572,13 @@
       </div>
 
       <!-- Weapon 3 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10 hover:border-[#EF4444]/50 transition-all">
-        <div class="flex items-center justify-between mb-2">
+      <div class="card-3d glass-card p-4 rounded-2xl border border-white/10 hover:border-[#EF4444]/50 transition-all">
+        <div class="card-glare"></div>
+        <div class="flex items-center justify-between mb-2 relative z-20">
           <span class="text-xs font-bold text-white">MP40 &amp; UMP</span>
           <span class="text-[10px] font-mono font-bold text-[#EAB308] bg-[#EAB308]/20 px-1.5 py-0.2 rounded">SMG SPRAY</span>
         </div>
-        <div class="text-[11px] text-[#9A9AA6] space-y-1">
+        <div class="text-[11px] text-[#9A9AA6] space-y-1 relative z-20">
           <div class="flex justify-between"><span>General:</span><strong class="text-white font-mono">196</strong></div>
           <div class="flex justify-between"><span>Red Dot:</span><strong class="text-white font-mono">192</strong></div>
           <div class="flex justify-between"><span>DPI:</span><strong class="text-[#22C55E] font-mono">480</strong></div>
@@ -354,12 +587,13 @@
       </div>
 
       <!-- Weapon 4 -->
-      <div class="glass-card p-4 rounded-2xl border border-white/10 hover:border-[#EF4444]/50 transition-all">
-        <div class="flex items-center justify-between mb-2">
+      <div class="card-3d glass-card p-4 rounded-2xl border border-white/10 hover:border-[#EF4444]/50 transition-all">
+        <div class="card-glare"></div>
+        <div class="flex items-center justify-between mb-2 relative z-20">
           <span class="text-xs font-bold text-white">AWM Sniper</span>
           <span class="text-[10px] font-mono font-bold text-[#3B82F6] bg-[#3B82F6]/20 px-1.5 py-0.2 rounded">QUICK-SCOPE</span>
         </div>
-        <div class="text-[11px] text-[#9A9AA6] space-y-1">
+        <div class="text-[11px] text-[#9A9AA6] space-y-1 relative z-20">
           <div class="flex justify-between"><span>General:</span><strong class="text-white font-mono">168</strong></div>
           <div class="flex justify-between"><span>AWM Scope:</span><strong class="text-white font-mono">186</strong></div>
           <div class="flex justify-between"><span>DPI:</span><strong class="text-[#22C55E] font-mono">440</strong></div>
@@ -383,8 +617,9 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <!-- Android Guide Card -->
-      <div class="glass-card p-6 rounded-3xl border border-[#22C55E]/40 space-y-4">
-        <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+      <div class="card-3d glass-card p-6 rounded-3xl border border-[#22C55E]/40 space-y-4">
+        <div class="card-glare"></div>
+        <div class="flex items-center gap-3 border-b border-white/10 pb-4 relative z-20">
           <div class="w-10 h-10 rounded-xl bg-[#22C55E]/20 text-[#22C55E] flex items-center justify-center font-bold text-xl">🤖</div>
           <div>
             <h3 class="text-lg font-bold text-white">Android APK Installation</h3>
@@ -392,7 +627,7 @@
           </div>
         </div>
 
-        <ol class="space-y-3.5 text-xs text-[#D4D4DD]">
+        <ol class="space-y-3.5 text-xs text-[#D4D4DD] relative z-20">
           <li class="flex items-start gap-3">
             <span class="w-6 h-6 rounded-full bg-[#22C55E] text-black font-extrabold flex items-center justify-center shrink-0">1</span>
             <div>
@@ -423,14 +658,15 @@
           </li>
         </ol>
 
-        <a href="./PASIYA-SENSI.apk" download="PASIYA-SENSI.apk" class="block w-full py-3 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-black text-xs font-bold text-center transition-colors">
+        <a href="./PASIYA-SENSI.apk" download="PASIYA-SENSI.apk" class="block w-full py-3 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-black text-xs font-bold text-center transition-colors relative z-20 shadow-lg">
           Download Android APK Now &rarr;
         </a>
       </div>
 
       <!-- iPhone Guide Card -->
-      <div class="glass-card p-6 rounded-3xl border border-[#EF4444]/40 space-y-4">
-        <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+      <div class="card-3d glass-card p-6 rounded-3xl border border-[#EF4444]/40 space-y-4">
+        <div class="card-glare"></div>
+        <div class="flex items-center gap-3 border-b border-white/10 pb-4 relative z-20">
           <div class="w-10 h-10 rounded-xl bg-[#EF4444]/20 text-[#EF4444] flex items-center justify-center font-bold text-xl">🍏</div>
           <div>
             <h3 class="text-lg font-bold text-white">Apple iPhone (iOS) Setup</h3>
@@ -438,7 +674,7 @@
           </div>
         </div>
 
-        <ol class="space-y-3.5 text-xs text-[#D4D4DD]">
+        <ol class="space-y-3.5 text-xs text-[#D4D4DD] relative z-20">
           <li class="flex items-start gap-3">
             <span class="w-6 h-6 rounded-full bg-[#EF4444] text-white font-extrabold flex items-center justify-center shrink-0">1</span>
             <div>
@@ -469,7 +705,7 @@
           </li>
         </ol>
 
-        <a href="./PASIYA-SENSI.mobileconfig" download="PASIYA-SENSI.mobileconfig" class="block w-full py-3 rounded-xl bg-[#EF4444] hover:bg-[#DC2626] text-white text-xs font-bold text-center transition-colors">
+        <a href="./PASIYA-SENSI.mobileconfig" download="PASIYA-SENSI.mobileconfig" class="block w-full py-3 rounded-xl bg-[#EF4444] hover:bg-[#DC2626] text-white text-xs font-bold text-center transition-colors relative z-20 shadow-lg">
           Download iPhone Profile Now &rarr;
         </a>
       </div>
@@ -478,7 +714,8 @@
 
   <!-- Official Developer & Direct Support Contact Hub (NEW!) -->
   <section id="contact" class="relative z-10 py-16 px-4 sm:px-6 max-w-4xl mx-auto">
-    <div class="glass-card-crimson rounded-3xl p-6 sm:p-10 border border-[#EF4444]/40 space-y-6">
+    <div class="card-3d glass-card-crimson rounded-3xl p-6 sm:p-10 border border-[#EF4444]/40 space-y-6 relative">
+      <div class="card-glare"></div>
       <div class="text-center max-w-xl mx-auto">
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#22C55E]/20 border border-[#22C55E]/40 text-[#A7F3D0] text-[10px] font-bold uppercase font-mono mb-2">
           👨‍💻 Verified Creator &amp; Direct Support
@@ -537,7 +774,8 @@
 
   <!-- Antiban & Security Proof Section -->
   <section id="antiban" class="relative z-10 py-12 px-4 sm:px-6 max-w-4xl mx-auto">
-    <div class="glass-card-crimson p-6 sm:p-8 rounded-3xl border border-[#22C55E]/50 text-center space-y-4">
+    <div class="card-3d glass-card-crimson p-6 sm:p-8 rounded-3xl border border-[#22C55E]/50 text-center space-y-4 relative">
+      <div class="card-glare"></div>
       <div class="w-14 h-14 rounded-2xl bg-[#22C55E]/20 text-[#22C55E] flex items-center justify-center text-3xl mx-auto">
         🛡️
       </div>
@@ -566,7 +804,8 @@
 
   <!-- Viral WhatsApp Squad Share Section -->
   <section class="relative z-10 py-12 px-4 sm:px-6 max-w-3xl mx-auto text-center">
-    <div class="glass-card p-6 sm:p-10 rounded-3xl border border-[#22C55E]/40 space-y-5">
+    <div class="card-3d glass-card p-6 sm:p-10 rounded-3xl border border-[#22C55E]/40 space-y-5 relative">
+      <div class="card-glare"></div>
       <span class="text-3xl">📢</span>
       <h2 class="text-2xl sm:text-4xl font-black text-white">
         Share with Your Free Fire Squad
@@ -596,30 +835,34 @@
     </div>
 
     <div class="space-y-4 text-left">
-      <div class="glass-card p-5 rounded-2xl border border-white/10">
-        <h3 class="text-sm sm:text-base font-bold text-white mb-1.5">Is my Free Fire account 100% safe from bans?</h3>
-        <p class="text-xs text-[#9A9AA6] leading-relaxed">
+      <div class="card-3d glass-card p-5 rounded-2xl border border-white/10 relative">
+        <div class="card-glare"></div>
+        <h3 class="text-sm sm:text-base font-bold text-white mb-1.5 relative z-20">Is my Free Fire account 100% safe from bans?</h3>
+        <p class="text-xs text-[#9A9AA6] leading-relaxed relative z-20">
           Yes, 100% safe. PASIYA Sensi does not hack, inject code, or edit game files. It simply optimizes your device's screen touch curves and shows you the best in-game sensitivity sliders.
         </p>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl border border-white/10">
-        <h3 class="text-sm sm:text-base font-bold text-white mb-1.5">Does this work on 2GB or 3GB low-end phones?</h3>
-        <p class="text-xs text-[#9A9AA6] leading-relaxed">
+      <div class="card-3d glass-card p-5 rounded-2xl border border-white/10 relative">
+        <div class="card-glare"></div>
+        <h3 class="text-sm sm:text-base font-bold text-white mb-1.5 relative z-20">Does this work on 2GB or 3GB low-end phones?</h3>
+        <p class="text-xs text-[#9A9AA6] leading-relaxed relative z-20">
           Yes! The app includes a dedicated &quot;Low-End Safe Stable&quot; preset and FPS Optimization tips designed to eliminate lag and frame drops during intense final-zone fights.
         </p>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl border border-white/10">
-        <h3 class="text-sm sm:text-base font-bold text-white mb-1.5">Why does iPhone Settings say &quot;Not Signed&quot;?</h3>
-        <p class="text-xs text-[#9A9AA6] leading-relaxed">
+      <div class="card-3d glass-card p-5 rounded-2xl border border-white/10 relative">
+        <div class="card-glare"></div>
+        <h3 class="text-sm sm:text-base font-bold text-white mb-1.5 relative z-20">Why does iPhone Settings say &quot;Not Signed&quot;?</h3>
+        <p class="text-xs text-[#9A9AA6] leading-relaxed relative z-20">
           Apple shows &quot;Not Signed&quot; for any web app profile installed outside the official App Store because Apple charges $99/year for developer certificates. It is completely normal and your app will launch in fullscreen with zero issues.
         </p>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl border border-white/10">
-        <h3 class="text-sm sm:text-base font-bold text-white mb-1.5">Is PASIYA Sensi completely free?</h3>
-        <p class="text-xs text-[#9A9AA6] leading-relaxed">
+      <div class="card-3d glass-card p-5 rounded-2xl border border-white/10 relative">
+        <div class="card-glare"></div>
+        <h3 class="text-sm sm:text-base font-bold text-white mb-1.5 relative z-20">Is PASIYA Sensi completely free?</h3>
+        <p class="text-xs text-[#9A9AA6] leading-relaxed relative z-20">
           Yes, PASIYA Sensi is 100% free for all Free Fire players worldwide. No subscriptions or hidden fees.
         </p>
       </div>
@@ -715,6 +958,328 @@
       document.getElementById('res-btn').innerText = data.btn;
       document.getElementById('res-tip').innerHTML = `<strong>Technique:</strong> ${data.tip}`;
     }
+  </script>
+  <!-- Interactive Three.js 3D Hologram Gyro Engine Script -->
+  <script>
+    (function initThreeHologram() {
+      const container = document.getElementById('three-hologram-container');
+      const canvas = document.getElementById('three-hologram-canvas');
+      if (!container || !canvas || typeof THREE === 'undefined') return;
+
+      const width = container.clientWidth || 400;
+      const height = container.clientHeight || 360;
+
+      // 1. Scene, Camera, Renderer
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+      camera.position.z = 8.5;
+
+      let renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({
+          canvas: canvas,
+          alpha: true,
+          antialias: true,
+          powerPreference: 'high-performance'
+        });
+      } catch (err) {
+        console.warn('WebGL not initialized, falling back to CSS animation', err);
+        return;
+      }
+
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+      // 2. Hologram Master Group
+      const holoGroup = new THREE.Group();
+      scene.add(holoGroup);
+
+      // Central Icosahedron Wireframe
+      const icoGeo = new THREE.IcosahedronGeometry(1.65, 1);
+      const icoMat = new THREE.MeshBasicMaterial({
+        color: 0xEF4444,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.88
+      });
+      const icoMesh = new THREE.Mesh(icoGeo, icoMat);
+      holoGroup.add(icoMesh);
+
+      // Inner Glowing Solid Core
+      const coreGeo = new THREE.OctahedronGeometry(0.95, 0);
+      const coreMat = new THREE.MeshBasicMaterial({
+        color: 0xFF2E2E,
+        wireframe: false,
+        transparent: true,
+        opacity: 0.5
+      });
+      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      holoGroup.add(coreMesh);
+
+      // Point Light
+      const pointLight = new THREE.PointLight(0xEF4444, 2, 25);
+      scene.add(pointLight);
+
+      // Concentric Gimbal Rings
+      // Ring 1 (Inner Crimson)
+      const ring1Geo = new THREE.TorusGeometry(2.3, 0.035, 16, 90);
+      const ring1Mat = new THREE.MeshBasicMaterial({ color: 0xEF4444, transparent: true, opacity: 0.9 });
+      const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
+      holoGroup.add(ring1);
+
+      // Ring 2 (Middle Gold)
+      const ring2Geo = new THREE.TorusGeometry(2.8, 0.03, 16, 90);
+      const ring2Mat = new THREE.MeshBasicMaterial({ color: 0xEAB308, transparent: true, opacity: 0.85 });
+      const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+      ring2.rotation.x = Math.PI / 3;
+      holoGroup.add(ring2);
+
+      // Ring 3 (Outer Emerald Tactical Track)
+      const ring3Geo = new THREE.TorusGeometry(3.3, 0.025, 16, 90);
+      const ring3Mat = new THREE.MeshBasicMaterial({ color: 0x22C55E, transparent: true, opacity: 0.75 });
+      const ring3 = new THREE.Mesh(ring3Geo, ring3Mat);
+      ring3.rotation.y = Math.PI / 4;
+      holoGroup.add(ring3);
+
+      // Targeting Crosshair Brackets
+      const bracketGroup = new THREE.Group();
+      const bracketMat = new THREE.LineBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.7 });
+      const bracketDist = 2.0;
+      [-1, 1].forEach(x => {
+        [-1, 1].forEach(y => {
+          const pts = [
+            new THREE.Vector3(x * bracketDist, y * (bracketDist - 0.35), 0),
+            new THREE.Vector3(x * bracketDist, y * bracketDist, 0),
+            new THREE.Vector3(x * (bracketDist - 0.35), y * bracketDist, 0)
+          ];
+          const bGeo = new THREE.BufferGeometry().setFromPoints(pts);
+          const bLine = new THREE.Line(bGeo, bracketMat);
+          bracketGroup.add(bLine);
+        });
+      });
+      holoGroup.add(bracketGroup);
+
+      // Particle Cloud (300 Embers & Data Nodes)
+      const particleCount = 280;
+      const pPositions = new Float32Array(particleCount * 3);
+      const pColors = new Float32Array(particleCount * 3);
+      const colorRed = new THREE.Color(0xEF4444);
+      const colorGold = new THREE.Color(0xF59E0B);
+      const colorWhite = new THREE.Color(0xFFFFFF);
+
+      for (let i = 0; i < particleCount; i++) {
+        const radius = 2.4 + Math.random() * 2.6;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos((Math.random() * 2) - 1);
+
+        pPositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+        pPositions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+        pPositions[i * 3 + 2] = radius * Math.cos(phi);
+
+        const mixChoice = Math.random();
+        const chosenColor = mixChoice < 0.6 ? colorRed : (mixChoice < 0.85 ? colorGold : colorWhite);
+        pColors[i * 3] = chosenColor.r;
+        pColors[i * 3 + 1] = chosenColor.g;
+        pColors[i * 3 + 2] = chosenColor.b;
+      }
+
+      const pGeometry = new THREE.BufferGeometry();
+      pGeometry.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+      pGeometry.setAttribute('color', new THREE.BufferAttribute(pColors, 3));
+
+      const pMaterial = new THREE.PointsMaterial({
+        size: 0.08,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending
+      });
+
+      const particleSystem = new THREE.Points(pGeometry, pMaterial);
+      holoGroup.add(particleSystem);
+
+      // Interaction Variables
+      let targetRotX = 0;
+      let targetRotY = 0;
+      let currentRotX = 0;
+      let currentRotY = 0;
+      let isDragging = false;
+      let prevMouseX = 0;
+      let prevMouseY = 0;
+      let spinSpeed = 1.0;
+      let pulseScale = 1.0;
+
+      // Mouse drag listeners
+      container.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      });
+      window.addEventListener('mouseup', () => { isDragging = false; });
+      window.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          const deltaX = e.clientX - prevMouseX;
+          const deltaY = e.clientY - prevMouseY;
+          targetRotY += deltaX * 0.008;
+          targetRotX += deltaY * 0.008;
+          prevMouseX = e.clientX;
+          prevMouseY = e.clientY;
+        } else {
+          const rect = container.getBoundingClientRect();
+          if (rect.top < window.innerHeight && rect.bottom > 0) {
+            const relX = (e.clientX - rect.left) / rect.width - 0.5;
+            const relY = (e.clientY - rect.top) / rect.height - 0.5;
+            if (relX >= -0.8 && relX <= 0.8 && relY >= -0.8 && relY <= 0.8) {
+              targetRotY = relX * 1.4;
+              targetRotX = relY * 1.4;
+            }
+          }
+        }
+      });
+
+      // Touch drag listeners for mobile
+      container.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          isDragging = true;
+          prevMouseX = e.touches[0].clientX;
+          prevMouseY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+      container.addEventListener('touchmove', (e) => {
+        if (isDragging && e.touches.length === 1) {
+          const deltaX = e.touches[0].clientX - prevMouseX;
+          const deltaY = e.touches[0].clientY - prevMouseY;
+          targetRotY += deltaX * 0.012;
+          targetRotX += deltaY * 0.012;
+          prevMouseX = e.touches[0].clientX;
+          prevMouseY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+      container.addEventListener('touchend', () => { isDragging = false; });
+
+      // Interactive Control Functions
+      window.triggerHoloPulse = function() {
+        pulseScale = 1.4;
+        icoMat.color.setHex(0xFFFFFF);
+        setTimeout(() => {
+          icoMat.color.setHex(0xEF4444);
+        }, 250);
+      };
+
+      window.toggleHoloSpin = function() {
+        spinSpeed = spinSpeed === 1.0 ? -1.8 : (spinSpeed < 0 ? 2.5 : 1.0);
+        const label = document.getElementById('holo-speed-lbl');
+        if (label) label.innerText = spinSpeed > 1 ? 'FAST' : (spinSpeed < 0 ? 'REVERSE' : 'NORMAL');
+      };
+
+      window.triggerAimLockAnim = function() {
+        bracketGroup.scale.set(0.65, 0.65, 0.65);
+        bracketMat.color.setHex(0x22C55E);
+        const status = document.getElementById('holo-status-text');
+        if (status) {
+          status.innerText = '🎯 AIM LOCK: LOCKED 100%';
+          status.classList.remove('text-[#EF4444]', 'border-[#EF4444]/40');
+          status.classList.add('text-[#22C55E]', 'border-[#22C55E]/40');
+        }
+        setTimeout(() => {
+          bracketGroup.scale.set(1.0, 1.0, 1.0);
+          bracketMat.color.setHex(0xFFFFFF);
+          if (status) {
+            status.innerText = 'CALIBRATING 120Hz';
+            status.classList.remove('text-[#22C55E]', 'border-[#22C55E]/40');
+            status.classList.add('text-[#EF4444]', 'border-[#EF4444]/40');
+          }
+        }, 1800);
+      };
+
+      const clock = new THREE.Clock();
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+
+        ring1.rotation.x += 0.012 * spinSpeed;
+        ring1.rotation.y += 0.018 * spinSpeed;
+        ring2.rotation.y += 0.015 * spinSpeed;
+        ring2.rotation.z += 0.010 * spinSpeed;
+        ring3.rotation.z += 0.008 * spinSpeed;
+        ring3.rotation.x += 0.014 * spinSpeed;
+
+        icoMesh.rotation.y += 0.007 * spinSpeed;
+        icoMesh.rotation.x += 0.005 * spinSpeed;
+        coreMesh.rotation.y -= 0.012 * spinSpeed;
+        particleSystem.rotation.y += 0.003 * spinSpeed;
+
+        if (pulseScale > 1.0) {
+          pulseScale = Math.max(1.0, pulseScale - delta * 1.5);
+        }
+        icoMesh.scale.set(pulseScale, pulseScale, pulseScale);
+
+        currentRotX += (targetRotX - currentRotX) * 0.06;
+        currentRotY += (targetRotY - currentRotY) * 0.06;
+        holoGroup.rotation.x = currentRotX;
+        holoGroup.rotation.y = currentRotY;
+
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        const newW = container.clientWidth || 400;
+        const newH = container.clientHeight || 360;
+        camera.aspect = newW / newH;
+        camera.updateProjectionMatrix();
+        renderer.setSize(newW, newH);
+      });
+    })();
+  </script>
+
+  <!-- Vanilla 3D Card Tilt & Phone Tilt Script -->
+  <script>
+    (function init3DCardTilt() {
+      // 3D Card Tilt for all cards with .card-3d
+      const cards = document.querySelectorAll('.card-3d');
+      cards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = ((y - centerY) / centerY) * -10;
+          const rotateY = ((x - centerX) / centerX) * 10;
+
+          card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`;
+          card.style.setProperty('--mouse-x', `${(x / rect.width * 100).toFixed(1)}%`);
+          card.style.setProperty('--mouse-y', `${(y / rect.height * 100).toFixed(1)}%`);
+        });
+
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+      });
+
+      // Phone Mockup Interactive 3D Parallax Tilt
+      const phone = document.getElementById('phone-3d-mockup');
+      const phoneContainer = document.getElementById('phone-3d-container');
+      if (phone && phoneContainer) {
+        phoneContainer.addEventListener('mousemove', (e) => {
+          const rect = phoneContainer.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = ((y - centerY) / centerY) * -16;
+          const rotateY = ((x - centerX) / centerX) * 18;
+
+          phone.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
+        });
+
+        phoneContainer.addEventListener('mouseleave', () => {
+          phone.style.transform = 'rotateX(6deg) rotateY(-12deg)';
+        });
+      }
+    })();
   </script>
 </body>
 </html>
