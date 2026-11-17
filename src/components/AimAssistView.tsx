@@ -4,11 +4,21 @@ import {
   Compass,
   Copy,
   Crosshair,
+  ExternalLink,
   Eye,
+  Info,
   LocateFixed,
+  Maximize2,
+  Minimize2,
   MonitorDot,
+  Radio,
+  Settings,
   ShieldCheck,
+  Smartphone,
+  Sparkles,
   Target,
+  Volume2,
+  Zap,
 } from 'lucide-react';
 import type { PlatformTarget, SensitivityConfig } from '../lib/optimizer';
 import {
@@ -64,6 +74,68 @@ export const AimAssistView: React.FC<AimAssistViewProps> = ({
   } | null>(null);
   const [copiedSpec, setCopiedSpec] = useState(false);
   const [hasOverlayPermission, setHasOverlayPermission] = useState(true);
+  const [showCalibrator, setShowCalibrator] = useState(false);
+  const [hudPlatformMode, setHudPlatformMode] = useState<'android' | 'ios'>(
+    platform === 'ios' ? 'ios' : 'android'
+  );
+  const [calibratorColor, setCalibratorColor] = useState<
+    'red' | 'green' | 'cyan' | 'yellow'
+  >('red');
+  const [calibratorStyle, setCalibratorStyle] = useState<
+    'sniper' | 'circle' | 'cross'
+  >('sniper');
+  const [activeIosTab, setActiveIosTab] = useState<
+    'quick' | 'triple' | 'backtap' | 'shortcut'
+  >('quick');
+
+  const playLockBeep = () => {
+    try {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.14);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.14);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.14);
+    } catch {
+      // AudioContext may be restricted before user gesture
+    }
+  };
+
+  const openCalibrator = async () => {
+    triggerHaptic('action');
+    setShowCalibrator(true);
+    try {
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const closeCalibrator = async () => {
+    triggerHaptic('selection');
+    playLockBeep();
+    setShowCalibrator(false);
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen();
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   React.useEffect(() => {
     if (isNativeAndroid()) {
@@ -192,69 +264,330 @@ export const AimAssistView: React.FC<AimAssistViewProps> = ({
       <section
         aria-labelledby="overlay-mode-heading"
         className={`rounded-2xl border p-4 sm:p-5 transition-colors ${
-          overlayEnabled
+          overlayEnabled && hudPlatformMode === 'android'
             ? 'bg-[#12090C] border-[#EF4444]/75 shadow-[0_0_24px_rgba(239,68,68,0.16)]'
             : 'bg-[#0B0B0F] border-[#23232B]'
         }`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#050507] border border-[#EF4444]/40 flex items-center justify-center shrink-0">
-              <MonitorDot className="w-5 h-5 text-[#EF4444]" aria-hidden="true" />
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2
-                  id="overlay-mode-heading"
-                  className="text-base font-bold text-white"
-                >
-                  Persistent Screen-Center Crosshair Overlay
-                </h2>
-                <span
-                  className={`text-[10px] font-mono-num font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
-                    overlayEnabled
-                      ? 'bg-[#EF4444]/20 border-[#EF4444]/60 text-white'
-                      : 'bg-[#060609] border-[#23232B] text-[#9A9AA6]'
-                  }`}
-                >
-                  {overlayEnabled ? 'CENTER HUD ACTIVE' : 'STANDBY'}
-                </span>
-              </div>
-              <p className="mt-1 text-xs text-[#9A9AA6]">
-                Pins a non-intrusive click-through reticle at exact viewport center across tabs · Tuned per Free Fire optic
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            role="switch"
-            aria-checked={overlayEnabled}
-            data-testid="toggle-persistent-overlay"
-            onClick={() => void handleToggleOverlayWithPermission()}
-            className={`ff-btn-sheen min-h-[40px] px-4 py-2 rounded-xl text-xs font-bold border transition-all whitespace-nowrap shrink-0 cursor-pointer ${
-              overlayEnabled
-                ? 'bg-[#EF4444] text-white border-[#EF4444]'
-                : 'bg-white text-[#050507] border-white hover:bg-[#E5E5EC]'
-            }`}
-          >
-            {overlayEnabled ? 'Overlay ON · Click to Hide' : 'Enable Screen Overlay'}
-          </button>
-        </div>
-
-        {isNativeAndroid() && !hasOverlayPermission && (
-          <div className="mt-3 p-3 rounded-xl bg-[#2A1215] border border-[#EF4444]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="text-xs text-[#FCA5A5]">
-              <strong className="text-white block font-bold">Free Fire Crosshair Permission Required:</strong>
-              Allow &quot;Display over other apps&quot; in Android Settings so the crosshair stays on screen when playing Free Fire.
-            </div>
+        {/* Platform HUD Mode Switcher */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-[#23232B]">
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#060609] border border-[#23232B]">
             <button
               type="button"
-              onClick={() => void requestOverlayPermission()}
-              className="px-3.5 py-1.5 rounded-lg bg-[#EF4444] text-white text-xs font-bold hover:bg-[#DC2626] transition-colors shrink-0 cursor-pointer"
+              onClick={() => {
+                triggerHaptic('tap');
+                setHudPlatformMode('android');
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                hudPlatformMode === 'android'
+                  ? 'bg-[#EF4444] text-white shadow-sm'
+                  : 'text-[#9A9AA6] hover:text-white'
+              }`}
             >
-              Grant Permission
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>Android Overlay</span>
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic('tap');
+                setHudPlatformMode('ios');
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                hudPlatformMode === 'ios'
+                  ? 'bg-[#EF4444] text-white shadow-sm'
+                  : 'text-[#9A9AA6] hover:text-white'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+              <span>iPhone Pro HUD (Stealth Trick)</span>
+            </button>
+          </div>
+
+          <span className="text-[11px] font-mono-num font-bold text-[#9A9AA6]">
+            {hudPlatformMode === 'android'
+              ? 'ANDROID TYPE_APPLICATION_OVERLAY'
+              : 'APPLE IOS ASSISTIVE ENGINE'}
+          </span>
+        </div>
+
+        {/* ANDROID OVERLAY SECTION */}
+        {hudPlatformMode === 'android' && (
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#050507] border border-[#EF4444]/40 flex items-center justify-center shrink-0">
+                  <MonitorDot className="w-5 h-5 text-[#EF4444]" aria-hidden="true" />
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2
+                      id="overlay-mode-heading"
+                      className="text-base font-bold text-white"
+                    >
+                      Persistent Screen-Center Crosshair Overlay
+                    </h2>
+                    <span
+                      className={`text-[10px] font-mono-num font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                        overlayEnabled
+                          ? 'bg-[#EF4444]/20 border-[#EF4444]/60 text-white'
+                          : 'bg-[#060609] border-[#23232B] text-[#9A9AA6]'
+                      }`}
+                    >
+                      {overlayEnabled ? 'CENTER HUD ACTIVE' : 'STANDBY'}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#9A9AA6]">
+                    Pins a non-intrusive click-through reticle at exact viewport center across tabs · Tuned per Free Fire optic
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                role="switch"
+                aria-checked={overlayEnabled}
+                data-testid="toggle-persistent-overlay"
+                onClick={() => void handleToggleOverlayWithPermission()}
+                className={`ff-btn-sheen min-h-[40px] px-4 py-2 rounded-xl text-xs font-bold border transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                  overlayEnabled
+                    ? 'bg-[#EF4444] text-white border-[#EF4444]'
+                    : 'bg-white text-[#050507] border-white hover:bg-[#E5E5EC]'
+                }`}
+              >
+                {overlayEnabled ? 'Overlay ON · Click to Hide' : 'Enable Screen Overlay'}
+              </button>
+            </div>
+
+            {isNativeAndroid() && !hasOverlayPermission && (
+              <div className="mt-3 p-3 rounded-xl bg-[#2A1215] border border-[#EF4444]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="text-xs text-[#FCA5A5]">
+                  <strong className="text-white block font-bold">Free Fire Crosshair Permission Required:</strong>
+                  Allow &quot;Display over other apps&quot; in Android Settings so the crosshair stays on screen when playing Free Fire.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void requestOverlayPermission()}
+                  className="px-3.5 py-1.5 rounded-lg bg-[#EF4444] text-white text-xs font-bold hover:bg-[#DC2626] transition-colors shrink-0 cursor-pointer"
+                >
+                  Grant Permission
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* IPHONE PRO STEALTH ENGINE SECTION */}
+        {hudPlatformMode === 'ios' && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-pulse" />
+                <h3 className="text-sm sm:text-base font-bold text-white">
+                  iPhone Free Fire Floating Crosshair Engine (Stealth Trick)
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono-num font-bold text-[#22C55E] bg-[#22C55E]/15 px-2 py-0.5 rounded border border-[#22C55E]/30">
+                NO JAILBREAK · 100% SAFE
+              </span>
+            </div>
+
+            <p className="text-xs text-[#C4C4CF] leading-relaxed">
+              Apple does not allow apps to draw directly over games. Pro competitive iPhone players use iOS native <strong className="text-white">AssistiveTouch + Hardware Shortcuts</strong> to get an unbananble, floating center crosshair over Free Fire:
+            </p>
+
+            {/* 3 Main Action Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic('action');
+                  window.location.href = 'App-Prefs:root=ACCESSIBILITY';
+                }}
+                className="p-3.5 rounded-xl bg-[#060609] border border-[#23232B] hover:border-[#EF4444] text-left transition-colors cursor-pointer group"
+              >
+                <div className="text-xs font-bold text-white flex items-center justify-between">
+                  <span>1. Open iOS Settings</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-[#EF4444] group-hover:translate-x-0.5 transition-transform" />
+                </div>
+                <p className="text-[11px] text-[#9A9AA6] mt-1.5 leading-snug">
+                  Direct deep link to Accessibility &gt; Touch &gt; AssistiveTouch.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic('action');
+                  window.location.href = 'shortcuts://';
+                }}
+                className="p-3.5 rounded-xl bg-[#060609] border border-[#23232B] hover:border-[#38BDF8] text-left transition-colors cursor-pointer group"
+              >
+                <div className="text-xs font-bold text-white flex items-center justify-between">
+                  <span>2. Apple Shortcuts App</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-[#38BDF8] group-hover:translate-x-0.5 transition-transform" />
+                </div>
+                <p className="text-[11px] text-[#9A9AA6] mt-1.5 leading-snug">
+                  Launch Shortcuts app to create 1-tap AssistiveTouch toggle action.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void openCalibrator()}
+                className="p-3.5 rounded-xl bg-[#160B0E] border border-[#EF4444] hover:bg-[#200D11] text-left transition-colors cursor-pointer group shadow-[0_0_15px_rgba(239,68,68,0.2)]"
+              >
+                <div className="text-xs font-bold text-white flex items-center justify-between">
+                  <span className="text-[#EF4444]">3. Fullscreen Calibrator</span>
+                  <Crosshair className="w-4 h-4 text-[#EF4444] group-hover:rotate-45 transition-transform" />
+                </div>
+                <p className="text-[11px] text-[#FCA5A5] mt-1.5 leading-snug font-semibold">
+                  Launch laser target to drag &amp; lock dot to exact screen center!
+                </p>
+              </button>
+            </div>
+
+            {/* Sub-tabs for detailed tricks */}
+            <div className="p-3 rounded-xl bg-[#060609] border border-[#23232B] space-y-3">
+              <div className="flex flex-wrap items-center gap-1.5 border-b border-[#23232B] pb-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('tap');
+                    setActiveIosTab('quick');
+                  }}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors cursor-pointer ${
+                    activeIosTab === 'quick'
+                      ? 'bg-white text-black'
+                      : 'text-[#9A9AA6] hover:text-white'
+                  }`}
+                >
+                  ⚡ Quick Assistive Setup
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('tap');
+                    setActiveIosTab('triple');
+                  }}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors cursor-pointer ${
+                    activeIosTab === 'triple'
+                      ? 'bg-white text-black'
+                      : 'text-[#9A9AA6] hover:text-white'
+                  }`}
+                >
+                  🔘 Triple-Click Power Button (Recommended)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('tap');
+                    setActiveIosTab('backtap');
+                  }}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors cursor-pointer ${
+                    activeIosTab === 'backtap'
+                      ? 'bg-white text-black'
+                      : 'text-[#9A9AA6] hover:text-white'
+                  }`}
+                >
+                  📲 Back Tap Trick (Double Tap Phone)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('tap');
+                    setActiveIosTab('shortcut');
+                  }}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors cursor-pointer ${
+                    activeIosTab === 'shortcut'
+                      ? 'bg-white text-black'
+                      : 'text-[#9A9AA6] hover:text-white'
+                  }`}
+                >
+                  ⌘ Siri &amp; Action Button Shortcut
+                </button>
+              </div>
+
+              {activeIosTab === 'quick' && (
+                <div className="space-y-2 text-xs text-[#C4C4CF]">
+                  <div className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-[#EF4444]/20 text-[#EF4444] font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      1
+                    </span>
+                    <div>
+                      <strong className="text-white">Turn AssistiveTouch ON:</strong> Settings &gt; Accessibility &gt; Touch &gt; AssistiveTouch &gt; Turn ON.
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-[#EF4444]/20 text-[#EF4444] font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      2
+                    </span>
+                    <div>
+                      <strong className="text-white">Clean Menu &amp; Set Actions to None:</strong> Under &quot;Custom Actions&quot;, set <span className="text-[#EF4444] font-semibold">Single-Tap</span> to <span className="text-white font-bold">&quot;None&quot;</span>. This prevents the menu from popping up when you tap near the crosshair during Free Fire!
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-[#EF4444]/20 text-[#EF4444] font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      3
+                    </span>
+                    <div>
+                      <strong className="text-white">Idle Opacity to 25% - 35%:</strong> Lower the opacity slider so the crosshair dot is translucent, letting you spot enemy heads clearly behind it.
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-[#EF4444]/20 text-[#EF4444] font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      4
+                    </span>
+                    <div>
+                      <strong className="text-white">Align Center:</strong> Click <button type="button" onClick={() => void openCalibrator()} className="text-[#EF4444] font-bold underline cursor-pointer">Fullscreen Calibrator</button> above, then drag your AssistiveTouch dot onto the glowing red laser point!
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeIosTab === 'triple' && (
+                <div className="space-y-2 text-xs text-[#C4C4CF]">
+                  <p className="text-white font-semibold">
+                    The #1 Pro Trick: Toggle crosshair ON and OFF anytime with 3 quick clicks of your iPhone Power/Side button!
+                  </p>
+                  <ol className="list-decimal pl-5 space-y-1 text-[11px] text-[#9A9AA6]">
+                    <li>Open <strong className="text-white">Settings &gt; Accessibility</strong>.</li>
+                    <li>Scroll down to the bottom and tap <strong className="text-white">Accessibility Shortcut</strong>.</li>
+                    <li>Check <strong className="text-[#EF4444]">AssistiveTouch</strong> (ensure a checkmark appears next to it).</li>
+                    <li>Open <strong className="text-white">Free Fire</strong>. Whenever you want your crosshair, just <strong className="text-white">Triple-Click the Power button</strong>! Press 3 times again to hide it!</li>
+                  </ol>
+                </div>
+              )}
+
+              {activeIosTab === 'backtap' && (
+                <div className="space-y-2 text-xs text-[#C4C4CF]">
+                  <p className="text-white font-semibold">
+                    Double-Tap Phone Back: Toggle crosshair without touching any button on screen!
+                  </p>
+                  <ol className="list-decimal pl-5 space-y-1 text-[11px] text-[#9A9AA6]">
+                    <li>Open <strong className="text-white">Settings &gt; Accessibility &gt; Touch</strong>.</li>
+                    <li>Scroll to the bottom and select <strong className="text-white">Back Tap</strong>.</li>
+                    <li>Tap <strong className="text-white">Double Tap</strong> and select <strong className="text-[#EF4444]">AssistiveTouch</strong>.</li>
+                    <li>Now whenever you play Free Fire, simply tap the back of your iPhone twice with your finger, and the center crosshair instantly toggles!</li>
+                  </ol>
+                </div>
+              )}
+
+              {activeIosTab === 'shortcut' && (
+                <div className="space-y-2 text-xs text-[#C4C4CF]">
+                  <p className="text-white font-semibold">
+                    Apple Shortcuts Automation &amp; Action Button (iPhone 15 Pro / 16 Series):
+                  </p>
+                  <ol className="list-decimal pl-5 space-y-1 text-[11px] text-[#9A9AA6]">
+                    <li>Open the <strong className="text-white">Apple Shortcuts</strong> app (tap &quot;Apple Shortcuts App&quot; button above).</li>
+                    <li>Tap the <strong className="text-white">+</strong> button to create a new Shortcut.</li>
+                    <li>Search for action: <strong className="text-[#EF4444]">&quot;Set AssistiveTouch&quot;</strong> and set it to <strong className="text-white">&quot;Toggle&quot;</strong>.</li>
+                    <li>Name it <strong className="text-white">&quot;Free Fire Crosshair&quot;</strong>.</li>
+                    <li>Now you can say <strong className="text-white">&quot;Hey Siri, Free Fire Crosshair&quot;</strong>, or map it to your iPhone 15 Pro / 16 <strong className="text-white">Action Button</strong> (Settings &gt; Action Button &gt; Shortcut)!</li>
+                  </ol>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -821,6 +1154,269 @@ export const AimAssistView: React.FC<AimAssistViewProps> = ({
           </section>
         </div>
       </div>
+
+      {/* Fullscreen iPhone Laser Center Calibrator Modal */}
+      {showCalibrator && (
+        <div
+          role="dialog"
+          aria-label="Screen Center Laser Calibrator"
+          className="fixed inset-0 z-[999999] bg-[#000000] text-white flex flex-col justify-between p-4 sm:p-6 overflow-hidden select-none"
+        >
+          {/* Full viewport center cross lines */}
+          <div className="absolute inset-0 pointer-events-none">
+            {/* Horizontal guide line */}
+            <div className="absolute left-0 right-0 top-1/2 h-[1px] bg-white/10" />
+            {/* Vertical guide line */}
+            <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-white/10" />
+            {/* Coordinate axes tick marks */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] border border-white/10 rounded-full" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120px] h-[120px] border border-white/15 rounded-full" />
+          </div>
+
+          {/* Top Bar */}
+          <div className="relative z-10 flex items-center justify-between gap-3 bg-[#0B0B0F]/90 border border-[#23232B] backdrop-blur-md px-4 py-3 rounded-2xl max-w-xl mx-auto w-full">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#180C0E] border border-[#EF4444]/40 flex items-center justify-center">
+                <Target className="w-4 h-4 text-[#EF4444]" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-white">
+                  Free Fire Center Reticle Calibrator
+                </h3>
+                <p className="text-[10px] text-[#9A9AA6]">
+                  Drag your iOS AssistiveTouch dot over the center laser target
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void closeCalibrator()}
+              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors cursor-pointer"
+            >
+              Done ✕
+            </button>
+          </div>
+
+          {/* Center Target Box */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none flex flex-col items-center justify-center">
+            {/* Laser Reticle */}
+            <div className="relative w-16 h-16 flex items-center justify-center">
+              {/* Outer glowing pulsing ring */}
+              <div
+                className={`absolute inset-0 rounded-full border-2 animate-ping opacity-60 ${
+                  calibratorColor === 'red'
+                    ? 'border-[#EF4444]'
+                    : calibratorColor === 'green'
+                    ? 'border-[#22C55E]'
+                    : calibratorColor === 'cyan'
+                    ? 'border-[#06B6D4]'
+                    : 'border-[#EAB308]'
+                }`}
+                style={{ animationDuration: '2.5s' }}
+              />
+
+              {/* Reticle shape rendering */}
+              {calibratorStyle === 'circle' ? (
+                <div
+                  className={`w-10 h-10 rounded-full border-2 border-dashed ${
+                    calibratorColor === 'red'
+                      ? 'border-[#EF4444]'
+                      : calibratorColor === 'green'
+                      ? 'border-[#22C55E]'
+                      : calibratorColor === 'cyan'
+                      ? 'border-[#06B6D4]'
+                      : 'border-[#EAB308]'
+                  }`}
+                />
+              ) : calibratorStyle === 'cross' ? (
+                <div className="relative w-12 h-12">
+                  <div
+                    className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 ${
+                      calibratorColor === 'red'
+                        ? 'bg-[#EF4444]'
+                        : calibratorColor === 'green'
+                        ? 'bg-[#22C55E]'
+                        : calibratorColor === 'cyan'
+                        ? 'bg-[#06B6D4]'
+                        : 'bg-[#EAB308]'
+                    }`}
+                  />
+                  <div
+                    className={`absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 ${
+                      calibratorColor === 'red'
+                        ? 'bg-[#EF4444]'
+                        : calibratorColor === 'green'
+                        ? 'bg-[#22C55E]'
+                        : calibratorColor === 'cyan'
+                        ? 'bg-[#06B6D4]'
+                        : 'bg-[#EAB308]'
+                    }`}
+                  />
+                </div>
+              ) : (
+                /* Sniper Reticle (Default) */
+                <div className="relative w-14 h-14 flex items-center justify-center">
+                  <div
+                    className={`absolute top-0 w-0.5 h-3.5 ${
+                      calibratorColor === 'red'
+                        ? 'bg-[#EF4444]'
+                        : calibratorColor === 'green'
+                        ? 'bg-[#22C55E]'
+                        : calibratorColor === 'cyan'
+                        ? 'bg-[#06B6D4]'
+                        : 'bg-[#EAB308]'
+                    }`}
+                  />
+                  <div
+                    className={`absolute bottom-0 w-0.5 h-3.5 ${
+                      calibratorColor === 'red'
+                        ? 'bg-[#EF4444]'
+                        : calibratorColor === 'green'
+                        ? 'bg-[#22C55E]'
+                        : calibratorColor === 'cyan'
+                        ? 'bg-[#06B6D4]'
+                        : 'bg-[#EAB308]'
+                    }`}
+                  />
+                  <div
+                    className={`absolute left-0 h-0.5 w-3.5 ${
+                      calibratorColor === 'red'
+                        ? 'bg-[#EF4444]'
+                        : calibratorColor === 'green'
+                        ? 'bg-[#22C55E]'
+                        : calibratorColor === 'cyan'
+                        ? 'bg-[#06B6D4]'
+                        : 'bg-[#EAB308]'
+                    }`}
+                  />
+                  <div
+                    className={`absolute right-0 h-0.5 w-3.5 ${
+                      calibratorColor === 'red'
+                        ? 'bg-[#EF4444]'
+                        : calibratorColor === 'green'
+                        ? 'bg-[#22C55E]'
+                        : calibratorColor === 'cyan'
+                        ? 'bg-[#06B6D4]'
+                        : 'bg-[#EAB308]'
+                    }`}
+                  />
+                  <div
+                    className={`w-7 h-7 rounded-full border ${
+                      calibratorColor === 'red'
+                        ? 'border-[#EF4444]/60'
+                        : calibratorColor === 'green'
+                        ? 'border-[#22C55E]/60'
+                        : calibratorColor === 'cyan'
+                        ? 'border-[#06B6D4]/60'
+                        : 'border-[#EAB308]/60'
+                    }`}
+                  />
+                </div>
+              )}
+
+              {/* Central Laser Point */}
+              <div
+                className={`w-2.5 h-2.5 rounded-full shadow-lg ${
+                  calibratorColor === 'red'
+                    ? 'bg-[#EF4444] shadow-[#EF4444]'
+                    : calibratorColor === 'green'
+                    ? 'bg-[#22C55E] shadow-[#22C55E]'
+                    : calibratorColor === 'cyan'
+                    ? 'bg-[#06B6D4] shadow-[#06B6D4]'
+                    : 'bg-[#EAB308] shadow-[#EAB308]'
+                }`}
+              />
+            </div>
+
+            {/* Target Marker Caption */}
+            <div className="mt-3 text-center">
+              <span className="inline-block text-[10px] font-mono-num font-bold text-white bg-black/80 px-2 py-0.5 rounded border border-white/20">
+                [ ⌖ 50.0% X · 50.0% Y ⌖ ]
+              </span>
+              <div className="text-[11px] font-bold text-white/90 mt-1">
+                DROP ASSISTIVETOUCH DOT EXACTLY HERE
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Control Dock */}
+          <div className="relative z-10 max-w-xl mx-auto w-full bg-[#0B0B0F]/90 border border-[#23232B] backdrop-blur-md p-3.5 rounded-2xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              {/* Color Choices */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-mono text-[#9A9AA6] mr-1">COLOR:</span>
+                {(['red', 'green', 'cyan', 'yellow'] as const).map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic('tap');
+                      setCalibratorColor(c);
+                    }}
+                    className={`w-6 h-6 rounded-full border-2 transition-all cursor-pointer ${
+                      c === 'red'
+                        ? 'bg-[#EF4444]'
+                        : c === 'green'
+                        ? 'bg-[#22C55E]'
+                        : c === 'cyan'
+                        ? 'bg-[#06B6D4]'
+                        : 'bg-[#EAB308]'
+                    } ${
+                      calibratorColor === c
+                        ? 'border-white scale-110 shadow-md'
+                        : 'border-transparent opacity-60 hover:opacity-100'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Style Choices */}
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] font-mono text-[#9A9AA6] mr-1">SHAPE:</span>
+                {(['sniper', 'circle', 'cross'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic('tap');
+                      setCalibratorStyle(s);
+                    }}
+                    className={`px-2 py-1 rounded text-[10px] font-mono font-bold uppercase transition-colors cursor-pointer ${
+                      calibratorStyle === s
+                        ? 'bg-white text-black'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              {/* Audio Beep Test */}
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic('selection');
+                  playLockBeep();
+                }}
+                className="px-2.5 py-1 rounded-lg bg-[#180C0E] border border-[#EF4444]/40 text-[#EF4444] text-[10px] font-bold inline-flex items-center gap-1 hover:bg-[#EF4444] hover:text-white transition-colors cursor-pointer"
+              >
+                <Volume2 className="w-3 h-3" />
+                <span>Test Beep</span>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void closeCalibrator()}
+              className="w-full py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-black text-xs font-bold transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Check className="w-4 h-4" />
+              <span>LOCK &amp; FINISH CALIBRATION</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
