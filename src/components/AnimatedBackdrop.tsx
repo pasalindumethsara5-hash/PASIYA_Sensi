@@ -21,9 +21,11 @@ export const AnimatedBackdrop: React.FC = () => {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#050507]"
     >
-      {/* Drifting Crimson & Crisp White Atmospheric Depth Orbs */}
-      <div className="ambient-glow-a absolute -top-40 -left-32 w-[600px] h-[600px] rounded-full bg-[#DC2626]/[0.16] blur-[130px]" />
-      <div className="ambient-glow-b absolute -bottom-44 -right-28 w-[580px] h-[580px] rounded-full bg-white/[0.06] blur-[125px]" />
+      {/* Drifting Radiant Crimson, Ruby & Violet Depth Orbs for Frosted Glass Refraction */}
+      <div className="ambient-glow-a absolute -top-40 -left-24 w-[700px] h-[700px] rounded-full bg-gradient-to-tr from-[#EF4444]/28 via-[#DC2626]/20 to-transparent blur-[140px]" />
+      <div className="ambient-glow-b absolute top-1/4 -right-32 w-[620px] h-[620px] rounded-full bg-gradient-to-bl from-[#F43F5E]/22 via-[#EF4444]/15 to-transparent blur-[135px]" />
+      <div className="ambient-glow-a absolute top-2/3 -left-36 w-[560px] h-[560px] rounded-full bg-gradient-to-tr from-[#8B5CF6]/14 via-[#EF4444]/10 to-transparent blur-[150px]" />
+      <div className="ambient-glow-b absolute -bottom-48 right-16 w-[640px] h-[640px] rounded-full bg-gradient-to-tl from-[#F59E0B]/14 via-white/[0.06] to-transparent blur-[140px]" />
 
       {/* Precision Dark-Black Rangefinder Grid with White/Red Hairlines */}
       <div

@@ -24,14 +24,110 @@
   }
 }
 
-/* Precision range slider styling (White, Red & Dark Black) */
+/* ==========================================================================
+   GLASSMORPHISM & FROSTED GLASS UI DESIGN SYSTEM (Dark Crimson Theme)
+   ========================================================================== */
+
+/* Universal Frosted Glass Card Panels */
+.glass-panel,
+[class*="bg-[#0B0B0F]"],
+.bg-\[\#0B0B0F\] {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(13, 13, 20, 0.72) 100%) !important;
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 
+    0 12px 36px 0 rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16) !important;
+}
+
+/* Crimson Frosted Glass Panels (Active / Highlights) */
+.glass-panel-crimson,
+[class*="bg-[#160B0E]"],
+.bg-\[\#160B0E\],
+[class*="bg-[#190B0E]"],
+.bg-\[\#190B0E\],
+[class*="bg-[#12090C]"],
+.bg-\[\#12090C\],
+[class*="bg-[#1A0D10]"],
+.bg-\[\#1A0D10\] {
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.16) 0%, rgba(26, 11, 15, 0.8) 100%) !important;
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(239, 68, 68, 0.42) !important;
+  box-shadow: 
+    0 12px 36px 0 rgba(239, 68, 68, 0.22),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+/* Emerald Frosted Glass Panels (Verified / Safe Badges) */
+.glass-panel-emerald,
+[class*="bg-[#0D1C12]"],
+.bg-\[\#0D1C12\],
+[class*="bg-[#0F1E15]"],
+.bg-\[\#0F1E15\] {
+  background: linear-gradient(145deg, rgba(34, 197, 94, 0.16) 0%, rgba(10, 26, 16, 0.8) 100%) !important;
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(34, 197, 94, 0.42) !important;
+  box-shadow: 
+    0 12px 36px 0 rgba(34, 197, 94, 0.22),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+/* Inset Frosted Glass Sub-wells & Backgrounds */
+.glass-well,
+[class*="bg-[#060609]"],
+.bg-\[\#060609\],
+[class*="bg-[#07070A]"],
+.bg-\[\#07070A\],
+[class*="bg-[#050507]"],
+.bg-\[\#050507\],
+[class*="bg-[#111116]"],
+.bg-\[\#111116\],
+[class*="bg-[#141419]"],
+.bg-\[\#141419\] {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  box-shadow: 
+    inset 0 2px 6px 0 rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Frosted Glass Navigation Bar */
+.glass-navbar {
+  background: rgba(5, 5, 8, 0.7) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.55), inset 0 -1px 0 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Frosted Glass Mobile Bottom Navigation Bar */
+.glass-bottom-bar {
+  background: rgba(5, 5, 8, 0.78) !important;
+  backdrop-filter: blur(32px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 
+    0 -12px 36px 0 rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Precision Glass Range Slider styling */
 input[type='range'].tactical-slider {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 6px;
+  height: 8px;
   border-radius: 999px;
-  background: #1B1B22;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
   outline: none;
   cursor: pointer;
 }
@@ -39,26 +135,34 @@ input[type='range'].tactical-slider {
 input[type='range'].tactical-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: #EF4444;
-  border: 2px solid #FFFFFF;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
+  background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 
+    0 0 16px rgba(239, 68, 68, 0.65),
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms ease;
 }
 
 input[type='range'].tactical-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.12);
+  transform: scale(1.18);
+  box-shadow: 
+    0 0 22px rgba(239, 68, 68, 0.85),
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 input[type='range'].tactical-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: #EF4444;
-  border: 2px solid #FFFFFF;
+  background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.65);
   cursor: pointer;
 }
 

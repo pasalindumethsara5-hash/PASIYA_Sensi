@@ -88,10 +88,10 @@ export function SlidingSegmentedControl<T extends string>({
 
   const indicatorToneClass =
     variant === 'white'
-      ? 'bg-white shadow-[0_2px_10px_rgba(255,255,255,0.18)]'
+      ? 'bg-white shadow-[0_4px_16px_rgba(255,255,255,0.25),inset_0_1px_0_rgba(255,255,255,0.5)] border border-white/40'
       : variant === 'surface'
-        ? 'bg-[#190B0E] border border-[#EF4444]/65 shadow-[0_0_16px_rgba(239,68,68,0.18)]'
-        : 'bg-[#EF4444] shadow-[0_2px_16px_rgba(239,68,68,0.34)]';
+        ? 'bg-[#190B0E] border border-[#EF4444]/65 shadow-[0_0_16px_rgba(239,68,68,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]'
+        : 'bg-gradient-to-r from-[#EF4444] to-[#DC2626] border border-white/25 shadow-[0_4px_20px_rgba(239,68,68,0.45),inset_0_1px_0_rgba(255,255,255,0.35)]';
 
   return (
     <div

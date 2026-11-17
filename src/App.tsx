@@ -499,8 +499,8 @@ export default function App() {
       <AnimatedBackdrop />
       <SplashIntro onComplete={handleIntroComplete} />
 
-      {/* Strict 3-Zone Top Navigation Bar */}
-      <header className="sticky top-0 z-30 h-14 bg-[#050507]/92 backdrop-blur-md border-b border-[#23232B]">
+      {/* Strict 3-Zone Frosted Glass Top Navigation Bar */}
+      <header className="sticky top-0 z-30 h-14 glass-navbar">
         <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-8">
           {/* Zone 1: Single brand wordmark + PM crest logo */}
           <a
@@ -658,10 +658,10 @@ export default function App() {
         {activeTab !== 'hub' && <DeveloperContactCard compact />}
       </main>
 
-      {/* Mobile Bottom 5-Tab Thumb Navigation with Sliding Active Bar & Glow */}
+      {/* Mobile Bottom Frosted Glass Navigation Bar with Sliding Active Bar & Glow */}
       <nav
         aria-label="Mobile navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#07070A]/95 backdrop-blur-md border-t border-[#23232B] pb-safe"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 glass-bottom-bar pb-safe"
       >
         <div
           aria-hidden="true"
