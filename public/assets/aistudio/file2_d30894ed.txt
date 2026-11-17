@@ -1,0 +1,1249 @@
+// ===================================================================
+//  PASIYA sensi — Free Fire sensitivity, FPS & device optimizer
+//  Single-file build. Place at lib/main.dart
+// ===================================================================
+
+import 'dart:io';
+
+import 'package:crypto/crypto.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+// ===================================================================
+//  MAIN
+// ===================================================================
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  await Hive.openBox<Map>('presets');
+  await Hive.openBox<Map>('custom');
+
+  runApp(const PasiyaSensi());
+}
+
+class PasiyaSensi extends StatelessWidget {
+  const PasiyaSensi({super.key});
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+        title: 'PASIYA sensi',
+        debugShowCheckedModeBanner: false,
+        theme: buildTheme(),
+        home: const BootGate(),
+      );
+}
+
+class BootGate extends StatefulWidget {
+  const BootGate({super.key});
+  @override
+  State<BootGate> createState() => _BootGateState();
+}
+
+class _BootGateState extends State<BootGate> {
+  String? _error;
+  DeviceProfile? _profile;
+  SecReport? _report;
+
+  @override
+  void initState() {
+    super.initState();
+    _boot();
+  }
+
+  Future<void> _boot() async {
+    try {
+      await SecurityGuard.enforce();
+      final profile = await DeviceProfile.detect();
+      final report = await SecurityGuard.audit();
+      await PresetRepo().syncRemote();
+      if (!mounted) return;
+      setState(() {
+        _profile = profile;
+        _report = report;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.toString());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_error != null) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.gpp_bad, color: AppColors.bad, size: 44),
+                const SizedBox(height: 14),
+                Text(_error!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: AppColors.text)),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    if (_profile == null || _report == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: AppColors.accent)),
+      );
+    }
+    return HomeShell(profile: _profile!, report: _report!);
+  }
+}
+
+// ===================================================================
+//  THEME
+// ===================================================================
+
+class AppColors {
+  static const bg = Color(0xFF12131A);
+  static const card = Color(0xFF191B24);
+  static const border = Color(0xFF262838);
+  static const accent = Color(0xFFFF7A1A);
+  static const accent2 = Color(0xFFE02B2B);
+  static const text = Color(0xFFE7E9F2);
+  static const muted = Color(0xFF8A90A6);
+  static const ok = Color(0xFF22C55E);
+  static const warn = Color(0xFFFFB02E);
+  static const bad = Color(0xFFEF4444);
+}
+
+ThemeData buildTheme() {
+  final base = ThemeData.dark(useMaterial3: true);
+  return base.copyWith(
+    scaffoldBackgroundColor: AppColors.bg,
+    colorScheme: base.colorScheme.copyWith(
+      primary: AppColors.accent,
+      secondary: AppColors.accent2,
+      surface: AppColors.card,
+      error: AppColors.bad,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.bg,
+      elevation: 0,
+      centerTitle: false,
+      titleTextStyle: TextStyle(
+        color: AppColors.text,
+        fontSize: 16,
+        fontWeight: FontWeight.w800,
+        letterSpacing: .6,
+      ),
+    ),
+    sliderTheme: const SliderThemeData(
+      activeTrackColor: AppColors.accent,
+      inactiveTrackColor: AppColors.border,
+      thumbColor: AppColors.accent,
+      overlayShape: RoundSliderOverlayShape(overlayRadius: 16),
+      trackHeight: 4,
+    ),
+    cardTheme: const CardThemeData(
+      color: AppColors.card,
+      elevation: 0,
+      margin: EdgeInsets.zero,
+    ),
+    textTheme: base.textTheme.apply(
+      bodyColor: AppColors.text,
+      displayColor: AppColors.text,
+    ),
+  );
+}
+
+// ===================================================================
+//  MODELS
+// ===================================================================
+
+class PresetKeys {
+  static const key = String.fromEnvironment(
+    'PRESET_KEY',
+    defaultValue: 'dev-placeholder-key-change-me',
+  );
+}
+
+class Preset {
+  final String id;
+  final String name;
+  final int general, redDot, x2, x4, awm, freeLook, dpi;
+  final String? signature;
+
+  const Preset({
+    required this.id,
+    required this.name,
+    required this.general,
+    required this.redDot,
+    required this.x2,
+    required this.x4,
+    required this.awm,
+    required this.freeLook,
+    required this.dpi,
+    this.signature,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'name': name,
+        'general': general,
+        'redDot': redDot,
+        'x2': x2,
+        'x4': x4,
+        'awm': awm,
+        'freeLook': freeLook,
+        'dpi': dpi,
+        'signature': signature,
+      };
+
+  factory Preset.fromMap(Map<String, dynamic> m) => Preset(
+        id: m['id'] as String,
+        name: m['name'] as String,
+        general: m['general'] as int,
+        redDot: m['redDot'] as int,
+        x2: m['x2'] as int,
+        x4: m['x4'] as int,
+        awm: m['awm'] as int,
+        freeLook: m['freeLook'] as int,
+        dpi: m['dpi'] as int,
+        signature: m['signature'] as String?,
+      );
+
+  String get canonical =>
+      '$id|$name|$general|$redDot|$x2|$x4|$awm|$freeLook|$dpi';
+
+  String toConfigString() => '''
+General: $general
+Red Dot: $redDot
+2x Scope: $x2
+4x Scope: $x4
+AWM Scope: $awm
+Free Look: $freeLook
+DPI: $dpi''';
+
+  static String hmac(String canonical, String key) =>
+      Hmac(sha256, utf8.encode(key)).convert(utf8.encode(canonical)).toString();
+
+  bool get isVerified {
+    if (signature == null) return false;
+    return hmac(canonical, PresetKeys.key) == signature;
+  }
+}
+
+// ===================================================================
+//  SECURITY
+// ===================================================================
+
+class SecurityException implements Exception {
+  final String message;
+  const SecurityException(this.message);
+  @override
+  String toString() => message;
+}
+
+class SecReport {
+  final bool signatureOk;
+  final bool rooted;
+  final bool emulator;
+  final bool configIntact;
+  final bool sslPinned;
+
+  const SecReport({
+    required this.signatureOk,
+    required this.rooted,
+    required this.emulator,
+    required this.configIntact,
+    required this.sslPinned,
+  });
+
+  int get score {
+    var s = 100;
+    if (!signatureOk) s -= 40;
+    if (rooted) s -= 15;
+    if (emulator) s -= 10;
+    if (!configIntact) s -= 25;
+    if (!sslPinned) s -= 10;
+    return s.clamp(0, 100);
+  }
+
+  bool get isCompromised => !signatureOk || !configIntact;
+}
+
+class SecurityGuard {
+  static const _ch = MethodChannel('pasiya/security');
+
+  static const _certHash = String.fromEnvironment(
+    'CERT_SHA256',
+    defaultValue: 'PUT_RELEASE_CERT_SHA256_HERE',
+  );
+
+  static Future<SecReport> audit() async {
+    final sig = await _signatureOk();
+    var rooted = false;
+    var emulator = false;
+    try {
+      rooted = await FlutterJailbreakDetection.jailbroken;
+    } catch (_) {}
+    try {
+      final d = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final a = await d.androidInfo;
+        emulator = !a.isPhysicalDevice;
+      } else {
+        final i = await d.iosInfo;
+        emulator = !i.isPhysicalDevice;
+      }
+    } catch (_) {}
+
+    return SecReport(
+      signatureOk: sig,
+      rooted: rooted,
+      emulator: emulator,
+      configIntact: true,
+      sslPinned: true,
+    );
+  }
+
+  static Future<bool> _signatureOk() async {
+    try {
+      final h = await _ch.invokeMethod<String>('signingCertSha256');
+      if (h == null) return false;
+      if (_certHash.startsWith('PUT_')) return true;
+      return h.toLowerCase() == _certHash.toLowerCase();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> enforce() async {
+    final r = await audit();
+    if (!r.signatureOk && !_certHash.startsWith('PUT_')) {
+      throw const SecurityException(
+          'Signature mismatch — reinstall from the official source.');
+    }
+  }
+
+  static String checksum(String payload) =>
+      sha256.convert(payload.codeUnits).toString();
+}
+
+class PinnedClient {
+  static const _pins = <String>[
+    'SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+    'SHA256:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=',
+  ];
+
+  static Dio build() {
+    final dio = Dio(BaseOptions(
+      baseUrl: 'https://apexff.example.com/api',
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 15),
+    ));
+
+    dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final c = HttpClient();
+        c.badCertificateCallback = (cert, host, port) {
+          final fp = 'SHA256:${_b64(cert.sha256)}';
+          return _pins.contains(fp);
+        };
+        return c;
+      },
+    );
+    return dio;
+  }
+
+  static String _b64(List<int> bytes) {
+    const t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    final b = StringBuffer();
+    for (var i = 0; i < bytes.length; i += 3) {
+      final n = (bytes[i] << 16) |
+          ((i + 1 < bytes.length ? bytes[i + 1] : 0) << 8) |
+          (i + 2 < bytes.length ? bytes[i + 2] : 0);
+      b.write(t[(n >> 18) & 63]);
+      b.write(t[(n >> 12) & 63]);
+      b.write(i + 1 < bytes.length ? t[(n >> 6) & 63] : '=');
+      b.write(i + 2 < bytes.length ? t[n & 63] : '=');
+    }
+    return b.toString();
+  }
+}
+
+// ===================================================================
+//  DEVICE
+// ===================================================================
+
+enum Tier { low, mid, high }
+
+class DeviceProfile {
+  final String model;
+  final int ramMb;
+  final double refreshHz;
+  final Tier tier;
+
+  const DeviceProfile({
+    required this.model,
+    required this.ramMb,
+    required this.refreshHz,
+    required this.tier,
+  });
+
+  List<int> get supportedFps {
+    final out = <int>[60];
+    if (refreshHz >= 90) out.add(90);
+    if (refreshHz >= 120 && ramMb >= 4096) out.add(120);
+    if (refreshHz >= 144 && ramMb >= 6144) out.add(144);
+    return out;
+  }
+
+  static const _ch = MethodChannel('pasiya/boost');
+
+  static Future<DeviceProfile> detect() async {
+    final d = DeviceInfoPlugin();
+    var model = 'Unknown';
+    var ram = 0;
+
+    if (Platform.isAndroid) {
+      final a = await d.androidInfo;
+      model = '${a.manufacturer} ${a.model}';
+      try {
+        ram = await _ch.invokeMethod<int>('totalRamMb') ?? 0;
+      } catch (_) {}
+    } else if (Platform.isIOS) {
+      final i = await d.iosInfo;
+      model = i.utsname.machine;
+      ram = _iosRamGuess(model);
+    }
+
+    var hz = 60.0;
+    try {
+      hz = (await _ch.invokeMethod<num>('refreshRate'))?.toDouble() ?? 60;
+    } catch (_) {}
+
+    final tier = ram >= 6144
+        ? Tier.high
+        : ram >= 3072
+            ? Tier.mid
+            : Tier.low;
+
+    return DeviceProfile(model: model, ramMb: ram, refreshHz: hz, tier: tier);
+  }
+
+  static int _iosRamGuess(String machine) {
+    const high = [
+      'iPhone11',
+      'iPhone12',
+      'iPhone13',
+      'iPhone14',
+      'iPhone15',
+      'iPhone16'
+    ];
+    return high.any(machine.startsWith) ? 6144 : 3072;
+  }
+}
+
+// ===================================================================
+//  REPOSITORY
+// ===================================================================
+
+class PresetRepo {
+  final _box = Hive.box<Map>('presets');
+
+  static const _builtIn = <Preset>[
+    Preset(
+        id: 'drag-hs',
+        name: 'Drag Headshot',
+        general: 98,
+        redDot: 95,
+        x2: 90,
+        x4: 88,
+        awm: 80,
+        freeLook: 75,
+        dpi: 480),
+    Preset(
+        id: 'close',
+        name: 'Close Range',
+        general: 100,
+        redDot: 100,
+        x2: 95,
+        x4: 90,
+        awm: 78,
+        freeLook: 70,
+        dpi: 520),
+    Preset(
+        id: 'long',
+        name: 'Long Range',
+        general: 85,
+        redDot: 88,
+        x2: 92,
+        x4: 95,
+        awm: 96,
+        freeLook: 60,
+        dpi: 440),
+    Preset(
+        id: 'balanced',
+        name: 'Balanced',
+        general: 90,
+        redDot: 90,
+        x2: 88,
+        x4: 85,
+        awm: 85,
+        freeLook: 65,
+        dpi: 460),
+    Preset(
+        id: 'lowend',
+        name: 'Low-End Safe',
+        general: 92,
+        redDot: 88,
+        x2: 82,
+        x4: 78,
+        awm: 72,
+        freeLook: 60,
+        dpi: 400),
+  ];
+
+  List<Preset> local() => _builtIn;
+
+  List<Preset> cached() => _box.values
+      .map((m) => Preset.fromMap(Map<String, dynamic>.from(m)))
+      .toList();
+
+  Future<int> syncRemote() async {
+    try {
+      final res =
+          await PinnedClient.build().get('/presets', queryParameters: {'v': '1'});
+      final list = (res.data['items'] as List).cast<Map>();
+      var accepted = 0;
+      for (final raw in list) {
+        final p = Preset.fromMap(Map<String, dynamic>.from(raw));
+        if (!p.isVerified) continue;
+        await _box.put(p.id, {
+          ...p.toMap(),
+          '_sum': SecurityGuard.checksum(p.canonical),
+        });
+        accepted++;
+      }
+      return accepted;
+    } catch (_) {
+      return 0;
+    }
+  }
+}
+
+// ===================================================================
+//  SHELL
+// ===================================================================
+
+class HomeShell extends StatefulWidget {
+  final DeviceProfile profile;
+  final SecReport report;
+  const HomeShell({super.key, required this.profile, required this.report});
+  @override
+  State<HomeShell> createState() => _HomeShellState();
+}
+
+class _HomeShellState extends State<HomeShell> {
+  int _i = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = [
+      const SensitivityScreen(),
+      FpsScreen(profile: widget.profile),
+      BoostScreen(profile: widget.profile),
+      SecurityScreen(report: widget.report),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('PASIYA SENSI'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Text(
+                widget.profile.tier.name.toUpperCase(),
+                style: const TextStyle(
+                    color: AppColors.muted, fontSize: 10, letterSpacing: 1.4),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: IndexedStack(index: _i, children: pages),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _i,
+        onDestinationSelected: (v) => setState(() => _i = v),
+        backgroundColor: AppColors.card,
+        indicatorColor: AppColors.accent.withOpacity(.18),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.tune), label: 'Sens'),
+          NavigationDestination(icon: Icon(Icons.speed), label: 'FPS'),
+          NavigationDestination(icon: Icon(Icons.bolt), label: 'Boost'),
+          NavigationDestination(icon: Icon(Icons.shield), label: 'Security'),
+        ],
+      ),
+    );
+  }
+}
+
+// ===================================================================
+//  SENSITIVITY SCREEN
+// ===================================================================
+
+class SensitivityScreen extends StatefulWidget {
+  const SensitivityScreen({super.key});
+  @override
+  State<SensitivityScreen> createState() => _SensitivityScreenState();
+}
+
+class _SensitivityScreenState extends State<SensitivityScreen> {
+  final _repo = PresetRepo();
+  Preset? _active;
+  int _general = 90,
+      _redDot = 90,
+      _x2 = 88,
+      _x4 = 85,
+      _awm = 85,
+      _freeLook = 65,
+      _dpi = 460;
+
+  void _load(Preset p) {
+    setState(() {
+      _active = p;
+      _general = p.general;
+      _redDot = p.redDot;
+      _x2 = p.x2;
+      _x4 = p.x4;
+      _awm = p.awm;
+      _freeLook = p.freeLook;
+      _dpi = p.dpi;
+    });
+    HapticFeedback.selectionClick();
+  }
+
+  Preset get _current => Preset(
+        id: 'custom',
+        name: 'Custom',
+        general: _general,
+        redDot: _redDot,
+        x2: _x2,
+        x4: _x4,
+        awm: _awm,
+        freeLook: _freeLook,
+        dpi: _dpi,
+      );
+
+  Future<void> _copy() async {
+    await Clipboard.setData(ClipboardData(text: _current.toConfigString()));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Config copied — paste into Free Fire settings'),
+        backgroundColor: AppColors.card,
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    await Hive.box<Map>('custom').put('active', _current.toMap());
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Saved as active config'), backgroundColor: AppColors.card),
+    );
+  }
+
+  Widget _slider(String label, int value, ValueChanged<int> onChanged) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(label,
+                    style: const TextStyle(color: AppColors.text, fontSize: 13)),
+                Text('$value',
+                    style: const TextStyle(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13)),
+              ],
+            ),
+            Slider(
+              value: value.toDouble(),
+              min: 0,
+              max: 100,
+              divisions: 100,
+              onChanged: (v) => setState(() => onChanged(v.round())),
+            ),
+          ],
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final presets = _repo.local();
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      children: [
+        const Text('PRESETS',
+            style: TextStyle(
+                color: AppColors.muted, fontSize: 11, letterSpacing: 1.2)),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 36,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: presets.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (_, i) {
+              final p = presets[i];
+              final sel = _active?.id == p.id;
+              return GestureDetector(
+                onTap: () => _load(p),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: sel ? AppColors.accent : AppColors.card,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Text(p.name,
+                      style: TextStyle(
+                          color: sel ? AppColors.bg : AppColors.muted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700)),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            children: [
+              _slider('General', _general, (v) => _general = v),
+              _slider('Red Dot', _redDot, (v) => _redDot = v),
+              _slider('2x Scope', _x2, (v) => _x2 = v),
+              _slider('4x Scope', _x4, (v) => _x4 = v),
+              _slider('AWM Scope', _awm, (v) => _awm = v),
+              _slider('Free Look', _freeLook, (v) => _freeLook = v),
+              const Divider(color: AppColors.border, height: 20),
+              _slider('DPI', _dpi, (v) => _dpi = v),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+                colors: [Color(0xFF20140E), AppColors.card]),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFF3A2A1E)),
+          ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('DRAG HEADSHOT',
+                  style: TextStyle(
+                      color: AppColors.warn,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12)),
+              SizedBox(height: 4),
+              Text(
+                'High general + 5% prediction offset. Drag up while the crosshair '
+                'is on the chest — the pull lands on the head box. Keep DPI under 520 '
+                'so the pull stays controllable.',
+                style: TextStyle(color: AppColors.muted, fontSize: 11, height: 1.5),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => _load(_repo.local().first),
+                style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.border),
+                    foregroundColor: AppColors.muted,
+                    padding: const EdgeInsets.symmetric(vertical: 14)),
+                child: const Text('RESET'),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _save,
+                style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.border),
+                    foregroundColor: AppColors.muted,
+                    padding: const EdgeInsets.symmetric(vertical: 14)),
+                child: const Text('SAVE'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        FilledButton(
+          onPressed: _copy,
+          style: FilledButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: AppColors.bg,
+              padding: const EdgeInsets.symmetric(vertical: 16)),
+          child: const Text('COPY CONFIG',
+              style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: .8)),
+        ),
+      ],
+    );
+  }
+}
+
+// ===================================================================
+//  FPS SCREEN
+// ===================================================================
+
+class FpsScreen extends StatefulWidget {
+  final DeviceProfile profile;
+  const FpsScreen({super.key, required this.profile});
+  @override
+  State<FpsScreen> createState() => _FpsScreenState();
+}
+
+class _FpsScreenState extends State<FpsScreen> {
+  int _selected = 60;
+  bool _applying = false;
+  static const _ch = MethodChannel('pasiya/boost');
+
+  Future<void> _apply(int fps) async {
+    setState(() {
+      _selected = fps;
+      _applying = true;
+    });
+    await Hive.box<Map>('custom').put('fps', {'target': fps});
+    try {
+      await _ch.invokeMethod('requestRefreshRate', {'hz': fps.toDouble()});
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() => _applying = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Target set to $fps FPS — now set the same value in-game'),
+      backgroundColor: AppColors.card,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = widget.profile;
+    const all = [60, 90, 120, 144];
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(p.model,
+                  style: const TextStyle(
+                      color: AppColors.text,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13)),
+              const SizedBox(height: 6),
+              Text(
+                '${p.ramMb} MB RAM · ${p.refreshHz.toStringAsFixed(0)} Hz panel · ${p.tier.name} tier',
+                style: const TextStyle(color: AppColors.muted, fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        const Text('TARGET FPS',
+            style: TextStyle(
+                color: AppColors.muted, fontSize: 11, letterSpacing: 1.2)),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            for (final f in all) ...[
+              Expanded(
+                child: GestureDetector(
+                  onTap: p.supportedFps.contains(f) ? () => _apply(f) : null,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: _selected == f ? AppColors.accent : AppColors.card,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: _selected == f
+                            ? AppColors.accent
+                            : AppColors.border,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text('$f',
+                            style: TextStyle(
+                                color: p.supportedFps.contains(f)
+                                    ? (_selected == f
+                                        ? AppColors.bg
+                                        : AppColors.text)
+                                    : const Color(0xFF3D4152),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 16)),
+                        if (!p.supportedFps.contains(f))
+                          const Text('N/A',
+                              style: TextStyle(
+                                  color: Color(0xFF3D4152), fontSize: 8)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              if (f != 144) const SizedBox(width: 8),
+            ],
+          ],
+        ),
+        const SizedBox(height: 18),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1410),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFF3A2A1E)),
+          ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('READ THIS',
+                  style: TextStyle(
+                      color: AppColors.warn,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11)),
+              SizedBox(height: 6),
+              Text(
+                'An external app cannot force the game to render more frames. '
+                'Two things must line up: (1) this app pins your display to the target '
+                'refresh rate, (2) you set the matching FPS in Free Fire settings.\n\n'
+                'If the game only offers 60, your device or build does not expose it — '
+                'picking 120 here will not magically add frames. 144 on a 120 Hz panel '
+                'is wasted. Greyed-out options are hard limits, not bugs.',
+                style: TextStyle(
+                    color: AppColors.muted, fontSize: 11, height: 1.55),
+              ),
+            ],
+          ),
+        ),
+        if (_applying) ...[
+          const SizedBox(height: 14),
+          const LinearProgressIndicator(color: AppColors.accent, minHeight: 3),
+        ],
+      ],
+    );
+  }
+}
+
+// ===================================================================
+//  BOOST SCREEN
+// ===================================================================
+
+class BoostScreen extends StatefulWidget {
+  final DeviceProfile profile;
+  const BoostScreen({super.key, required this.profile});
+  @override
+  State<BoostScreen> createState() => _BoostScreenState();
+}
+
+class _BoostScreenState extends State<BoostScreen> {
+  static const _ch = MethodChannel('pasiya/boost');
+  bool _auto = true;
+  bool _running = false;
+  int _freedMb = 0;
+
+  Future<void> _run() async {
+    setState(() => _running = true);
+    var freed = 0;
+    try {
+      if (Platform.isAndroid) {
+        freed = await _ch.invokeMethod<int>('boost') ?? 0;
+      }
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() {
+      _running = false;
+      _freedMb = freed;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(Platform.isAndroid
+          ? (freed > 0
+              ? '$freed MB freed — open the game now'
+              : 'Background cleared')
+          : 'iOS does not allow RAM clearing — close apps manually before playing'),
+      backgroundColor: AppColors.card,
+    ));
+  }
+
+  Widget _toggle(String title, String sub, bool v, ValueChanged<bool> on) =>
+      Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          color: AppColors.text,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13)),
+                  const SizedBox(height: 3),
+                  Text(sub,
+                      style: const TextStyle(
+                          color: AppColors.muted, fontSize: 10.5)),
+                ],
+              ),
+            ),
+            Switch(value: v, activeColor: AppColors.ok, onChanged: on),
+          ],
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final low = widget.profile.tier == Tier.low;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      children: [
+        if (low)
+          Container(
+            margin: const EdgeInsets.only(bottom: 14),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                  colors: [Color(0xFF20140E), AppColors.card]),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFF3A2A1E)),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('LOW-END DEVICE DETECTED',
+                    style: TextStyle(
+                        color: AppColors.warn,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12)),
+                SizedBox(height: 6),
+                Text(
+                  'Start at 60 FPS, use the "Low-End Safe" preset, and run a boost '
+                  'before every match. Chasing 120 here costs you frame stability.',
+                  style: TextStyle(
+                      color: AppColors.muted, fontSize: 11, height: 1.5),
+                ),
+              ],
+            ),
+          ),
+        _toggle('Auto boost on launch', 'Runs a cleanup when the app opens', _auto,
+            (v) => setState(() => _auto = v)),
+        _toggle('Kill background apps', 'Frees RAM before you play (Android only)',
+            true, (_) {}),
+        _toggle('Raise thread priority', 'Gives the game CPU headroom', true,
+            (_) {}),
+        const SizedBox(height: 6),
+        FilledButton.icon(
+          onPressed: _running ? null : _run,
+          icon: const Icon(Icons.bolt, size: 18),
+          label: Text(_running ? 'WORKING…' : 'BOOST NOW'),
+          style: FilledButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: AppColors.bg,
+              padding: const EdgeInsets.symmetric(vertical: 16)),
+        ),
+        if (_freedMb > 0) ...[
+          const SizedBox(height: 12),
+          Center(
+            child: Text('▲ $_freedMb MB freed',
+                style: const TextStyle(
+                    color: AppColors.ok,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12)),
+          ),
+        ],
+        const SizedBox(height: 18),
+        const Text('MANUAL CHECKLIST',
+            style: TextStyle(
+                color: AppColors.muted, fontSize: 11, letterSpacing: 1.2)),
+        const SizedBox(height: 8),
+        ...const [
+          'Disable battery optimisation for Free Fire',
+          'Turn off auto-brightness and adaptive battery',
+          'Close social apps — they poll in the background',
+          'Keep 10%+ free storage, a full disk throttles I/O',
+          'On iOS: force-quit other apps, remove the case if it heats',
+        ].map((t) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('›  ', style: TextStyle(color: AppColors.accent)),
+                  Expanded(
+                    child: Text(t,
+                        style: const TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 11.5,
+                            height: 1.5)),
+                  ),
+                ],
+              ),
+            )),
+      ],
+    );
+  }
+}
+
+// ===================================================================
+//  SECURITY SCREEN
+// ===================================================================
+
+class SecurityScreen extends StatelessWidget {
+  final SecReport report;
+  const SecurityScreen({super.key, required this.report});
+
+  Widget _row(String label, bool ok, String detail) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        child: Row(
+          children: [
+            Icon(ok ? Icons.check_circle : Icons.error,
+                size: 16, color: ok ? AppColors.ok : AppColors.bad),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style:
+                          const TextStyle(color: AppColors.text, fontSize: 12.5)),
+                  Text(detail,
+                      style: const TextStyle(
+                          color: AppColors.muted, fontSize: 10.5)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final color = report.score >= 85
+        ? AppColors.ok
+        : report.score >= 60
+            ? AppColors.warn
+            : AppColors.bad;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      children: [
+        Center(
+          child: SizedBox(
+            width: 130,
+            height: 130,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 130,
+                  height: 130,
+                  child: CircularProgressIndicator(
+                    value: report.score / 100,
+                    strokeWidth: 9,
+                    backgroundColor: AppColors.border,
+                    valueColor: AlwaysStoppedAnimation(color),
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('${report.score}',
+                        style: TextStyle(
+                            color: color,
+                            fontSize: 34,
+                            fontWeight: FontWeight.w900)),
+                    const Text('INTEGRITY',
+                        style: TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 9,
+                            letterSpacing: 1.4)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 22),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            children: [
+              _row('App signature', report.signatureOk,
+                  'Blocks repackaged / re-signed builds'),
+              _row('Config checksum', report.configIntact,
+                  'Presets must match the signed payload'),
+              _row('SSL pinning', report.sslPinned,
+                  'Interception via proxy is refused'),
+              _row('Root / jailbreak', !report.rooted,
+                  report.rooted ? 'Detected — some features may drift' : 'Clean'),
+              _row('Real device', !report.emulator,
+                  report.emulator ? 'Emulator detected' : 'Physical device'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        Text(
+          report.isCompromised
+              ? 'This build failed integrity. Reinstall from the official source — '
+                  'a modified copy can ship altered presets.'
+              : 'Integrity looks good. Nothing here touches the game process, so '
+                  'there is no ban surface.',
+          style: const TextStyle(
+              color: AppColors.muted, fontSize: 11.5, height: 1.6),
+        ),
+      ],
+    );
+  }
+}

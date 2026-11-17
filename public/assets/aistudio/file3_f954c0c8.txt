@@ -1,0 +1,315 @@
+# PASIYA sensi — setup
+
+## 0. Scaffold
+flutter create --org lk.pasiya --project-name pasiya_sensi pasiya_sensi
+cd pasiya_sensi
+# replace lib/main.dart with FILE 1
+# copy every block below into its path
+
+## 1. pubspec.yaml  (replace whole file)
+name: pasiya_sensi
+description: PASIYA sensi — Free Fire sensitivity, FPS and device optimizer.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  dio: ^5.4.0
+  device_info_plus: ^10.1.0
+  package_info_plus: ^8.0.0
+  flutter_jailbreak_detection: ^1.10.0
+  crypto: ^3.0.3
+  flutter_secure_storage: ^9.2.2
+  url_launcher: ^6.3.0
+  collection: ^1.18.0
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#12131A"
+  adaptive_icon_foreground: "assets/icon/foreground.png"
+
+## 2. android/app/src/main/kotlin/lk/pasiya/sensi/MainActivity.kt
+package lk.pasiya.sensi
+
+import android.app.ActivityManager
+import android.content.ComponentCallbacks2
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.view.WindowManager
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+import java.security.MessageDigest
+
+class MainActivity : FlutterActivity() {
+
+    override fun configureFlutterEngine(engine: FlutterEngine) {
+        super.configureFlutterEngine(engine)
+
+        MethodChannel(engine.dartExecutor.binaryMessenger, "pasiya/security")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "signingCertSha256" -> result.success(signingHash())
+                    else -> result.notImplemented()
+                }
+            }
+
+        MethodChannel(engine.dartExecutor.binaryMessenger, "pasiya/boost")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "totalRamMb" -> result.success(totalRamMb())
+                    "refreshRate" -> result.success(displayHz().toDouble())
+                    "boost" -> result.success(boost())
+                    "requestRefreshRate" -> {
+                        val hz = call.argument<Double>("hz") ?: 60.0
+                        requestHz(hz)
+                        result.success(true)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    private fun signingHash(): String? = try {
+        val pm = packageManager
+        val info = if (Build.VERSION.SDK_INT >= 33) {
+            pm.getPackageInfo(packageName,
+                PackageManager.PackageInfoFlags.of(
+                    PackageManager.GET_SIGNING_CERTIFICATES.toLong()))
+        } else {
+            @Suppress("DEPRECATION")
+            pm.getPackageInfo(packageName, PackageManager.GET_SIGNATURES)
+        }
+        val sigs = if (Build.VERSION.SDK_INT >= 28) {
+            info.signingInfo?.apkContentsSigners
+        } else {
+            @Suppress("DEPRECATION") info.signatures
+        }
+        val bytes = sigs?.firstOrNull()?.toByteArray() ?: return null
+        MessageDigest.getInstance("SHA-256").digest(bytes)
+            .joinToString("") { "%02x".format(it) }
+    } catch (e: Exception) { null }
+
+    private fun totalRamMb(): Int {
+        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val mi = ActivityManager.MemoryInfo()
+        am.getMemoryInfo(mi)
+        return (mi.totalMem / (1024 * 1024)).toInt()
+    }
+
+    private fun displayHz(): Float =
+        if (Build.VERSION.SDK_INT >= 30) display?.refreshRate ?: 60f else 60f
+
+    private fun requestHz(hz: Double) {
+        if (Build.VERSION.SDK_INT < 23) return
+        val target = (hz * 1000).toInt()
+        Handler(Looper.getMainLooper()).post {
+            val lp = window.attributes
+            lp.preferredDisplayModeId = target
+            window.attributes = lp
+        }
+    }
+
+    private fun boost(): Int {
+        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val before = ActivityManager.MemoryInfo()
+            .also { am.getMemoryInfo(it) }.availMem
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            packageManager.getInstalledApplications(0).forEach { app ->
+                if (app.packageName != packageName) {
+                    am.killBackgroundProcesses(app.packageName)
+                }
+            }
+        }
+        am.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL)
+
+        val after = ActivityManager.MemoryInfo()
+            .also { am.getMemoryInfo(it) }.availMem
+        return ((after - before) / (1024 * 1024)).toInt().coerceAtLeast(0)
+    }
+}
+
+## 3. android/app/build.gradle
+android {
+    namespace "lk.pasiya.sensi"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "lk.pasiya.sensi"
+        minSdk 23
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(System.getenv("KEYSTORE") ?: "pasiya.jks")
+            storePassword System.getenv("KEY_PASS")
+            keyAlias System.getenv("KEY_ALIAS")
+            keyPassword System.getenv("KEY_PASS")
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                          'proguard-rules.pro'
+            ndk { debugSymbolLevel 'FULL' }
+        }
+    }
+}
+
+## 4. android/app/proguard-rules.pro
+-keep class io.flutter.** { *; }
+-keep class lk.pasiya.** { *; }
+-repackageclasses
+-allowaccessmodification
+-optimizationpasses 5
+
+## 5. android/app/src/main/AndroidManifest.xml
+<application
+    android:label="PASIYA sensi"
+    ...>
+
+## 6. ios/Runner/AppDelegate.swift
+import Flutter
+import UIKit
+
+@main
+@objc class AppDelegate: FlutterAppDelegate {
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    let controller = window?.rootViewController as! FlutterViewController
+
+    FlutterMethodChannel(name: "pasiya/security",
+                         binaryMessenger: controller.binaryMessenger)
+      .setMethodCallHandler { call, result in
+        switch call.method {
+        case "signingCertSha256":
+          let team = Bundle.main.infoDictionary?["AppIdentifierPrefix"] as? String ?? ""
+          result(team.isEmpty ? nil : team)
+        default: result(FlutterMethodNotImplemented)
+        }
+      }
+
+    FlutterMethodChannel(name: "pasiya/boost",
+                         binaryMessenger: controller.binaryMessenger)
+      .setMethodCallHandler { call, result in
+        switch call.method {
+        case "refreshRate": result(UIScreen.main.maximumFramesPerSecond)
+        case "totalRamMb": result(Int(ProcessInfo.processInfo.physicalMemory / 1_048_576))
+        case "boost": result(0)
+        case "requestRefreshRate": result(true)
+        default: result(FlutterMethodNotImplemented)
+        }
+      }
+
+    GeneratedPluginRegistrant.register(with: self)
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+}
+
+## 7. ios/Runner/Info.plist  (add inside <dict>)
+<key>CFBundleDisplayName</key>
+<string>PASIYA sensi</string>
+<key>CFBundleName</key>
+<string>pasiya_sensi</string>
+<key>CADisableMinimumFrameDurationOnPhone</key>
+<true/>
+
+## 8. firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    match /presets/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /devices/{uid} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == uid;
+    }
+  }
+}
+
+## 9. functions/index.js
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const crypto = require('crypto');
+admin.initializeApp();
+
+const KEY = process.env.PRESET_KEY;
+const sign = (p) => crypto.createHmac('sha256', KEY)
+  .update(`${p.id}|${p.name}|${p.general}|${p.redDot}|${p.x2}|${p.x4}|${p.awm}|${p.freeLook}|${p.dpi}`)
+  .digest('hex');
+
+exports.publishPreset = functions.https.onRequest(async (req, res) => {
+  if (req.get('x-admin') !== process.env.ADMIN_TOKEN) return res.status(401).send('no');
+  const p = req.body;
+  p.signature = sign(p);
+  await admin.firestore().collection('presets').doc(p.id).set(p);
+  res.json({ ok: true, signature: p.signature });
+});
+
+## 10. .gitignore  (append)
+android/key.properties
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+*.jks
+*.keystore
+
+## 11. Build
+keytool -genkey -v -keystore pasiya.jks -keyalg RSA -keysize 2048 \
+        -validity 10000 -alias pasiya
+keytool -list -v -keystore pasiya.jks -alias pasiya | grep SHA256
+
+flutter pub get
+dart run flutter_launcher_icons
+
+flutter build apk --release \
+  --obfuscate --split-debug-info=build/sym \
+  --dart-define=CERT_SHA256=<hash from above> \
+  --dart-define=PRESET_KEY=<your hmac key>
+
+flutter build ipa --release \
+  --obfuscate --split-debug-info=build/sym-ios \
+  --dart-define=PRESET_KEY=<your hmac key>
+
+## 12. Hardening checklist
+[ ] --obfuscate + --split-debug-info on every release
+[ ] minifyEnabled true + R8
+[ ] CERT_SHA256 replaced (dev placeholder gone)
+[ ] backup SSL pin present
+[ ] HMAC key only on the server
+[ ] Firestore write locked to server
+[ ] Firebase App Check enabled (Play Integrity + App Attest)
+[ ] rate limit on /presets (60/min per IP)
+[ ] google-services files gitignored
+[ ] iOS App Attest enabled

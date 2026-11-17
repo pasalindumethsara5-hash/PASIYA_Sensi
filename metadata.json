@@ -1,0 +1,6 @@
+{
+  "name": "PASIYA SENSI",
+  "description": "Cross-platform Android & iOS Free Fire sensitivity calibrator, 60-144 FPS sync profiler, low-end device booster, and tamper-proof config vault.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

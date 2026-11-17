@@ -1,0 +1,506 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: 'Outfit', system-ui, sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: #050507;
+    color: #FFFFFF;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Precision range slider styling (White, Red & Dark Black) */
+input[type='range'].tactical-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #1B1B22;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type='range'].tactical-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #EF4444;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
+  cursor: pointer;
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+input[type='range'].tactical-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+
+input[type='range'].tactical-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #EF4444;
+  border: 2px solid #FFFFFF;
+  cursor: pointer;
+}
+
+/* Directional GPU-composited tab transition animations */
+@keyframes tabSlideFromRight {
+  0% {
+    transform: translate3d(48px, 0, 0) scale(0.985);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes tabSlideFromLeft {
+  0% {
+    transform: translate3d(-48px, 0, 0) scale(0.985);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes tabFadeIn {
+  0% {
+    transform: translate3d(0, 14px, 0) scale(0.99);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+.tab-enter-right {
+  animation: tabSlideFromRight 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+.tab-enter-left {
+  animation: tabSlideFromLeft 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+.tab-enter-neutral {
+  animation: tabFadeIn 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+/* GPU compositor-only background ember, sweep & glow animations */
+@keyframes emberRise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.75);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate3d(24px, -110vh, 0) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes backdropSweep {
+  0% {
+    transform: translate3d(-45%, -15%, 0) rotate(-18deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(135%, 35%, 0) rotate(-18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes glowDriftA {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(44px, 28px, 0) scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes glowDriftB {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate3d(-38px, -32px, 0) scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes logoCornersPulse {
+  0%, 100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes splashRingSpin {
+  0% {
+    transform: rotate(0deg) scale(0.85);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: rotate(180deg) scale(1.04);
+    opacity: 0.45;
+  }
+}
+
+.crimson-ember {
+  animation: emberRise 10s linear infinite;
+  will-change: transform, opacity;
+}
+
+.backdrop-scan {
+  animation: backdropSweep 9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.ambient-glow-a {
+  animation: glowDriftA 12s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.ambient-glow-b {
+  animation: glowDriftB 15s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.logo-corners-pulse {
+  animation: logoCornersPulse 2.4s ease-in-out infinite;
+}
+
+.splash-ring-spin {
+  animation: splashRingSpin 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pmCrestReveal {
+  0% {
+    transform: scale(0.62) translateY(18px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes titleReveal {
+  0% {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sweepReveal {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+.splash-pm-reveal {
+  animation: pmCrestReveal 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.splash-title-reveal {
+  animation: titleReveal 560ms cubic-bezier(0.16, 1, 0.3, 1) 260ms both;
+}
+
+.splash-sweep-reveal {
+  animation: sweepReveal 840ms cubic-bezier(0.16, 1, 0.3, 1) 420ms both;
+}
+
+.splash-skip-reveal {
+  animation: titleReveal 420ms cubic-bezier(0.16, 1, 0.3, 1) 540ms both;
+}
+
+/* Free Fire Tactical Arena Animations (GPU compositor-only) */
+@keyframes ffScopeSpinCW {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ffScopeSpinCCW {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes ffScanlineY {
+  0% {
+    transform: translate3d(0, -15vh, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  88% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: translate3d(0, 115vh, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes ffShockwaveRing {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.48);
+    opacity: 0;
+  }
+}
+
+@keyframes ffLogoLaserScan {
+  0% {
+    transform: translate3d(-140%, 0, 0) skewX(-22deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.8;
+  }
+  75% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(220%, 0, 0) skewX(-22deg);
+    opacity: 0;
+  }
+}
+
+@keyframes ffReticlePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.72;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+.ff-reticle-spin-cw {
+  animation: ffScopeSpinCW 36s linear infinite;
+  will-change: transform;
+}
+
+.ff-reticle-spin-ccw {
+  animation: ffScopeSpinCCW 26s linear infinite;
+  will-change: transform;
+}
+
+.ff-splash-spin-cw {
+  animation: ffScopeSpinCW 14s linear infinite;
+  will-change: transform;
+}
+
+.ff-splash-spin-ccw {
+  animation: ffScopeSpinCCW 10s linear infinite;
+  will-change: transform;
+}
+
+.ff-scanline-y {
+  animation: ffScanlineY 8.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.ff-shockwave {
+  animation: ffShockwaveRing 2.1s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.ff-logo-laser {
+  animation: ffLogoLaserScan 2.2s cubic-bezier(0.16, 1, 0.3, 1) 300ms both;
+  will-change: transform, opacity;
+}
+
+.ff-headlock-pulse {
+  animation: ffReticlePulse 1.8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.ff-btn-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.ff-btn-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: translate3d(-160%, 0, 0) skewX(-20deg);
+  transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.ff-btn-sheen:hover::after,
+.ff-btn-sheen:focus-visible::after {
+  transform: translate3d(320%, 0, 0) skewX(-20deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crimson-ember,
+  .backdrop-scan,
+  .ambient-glow-a,
+  .ambient-glow-b,
+  .logo-corners-pulse,
+  .splash-ring-spin,
+  .tab-enter-right,
+  .tab-enter-left,
+  .tab-enter-neutral,
+  .splash-pm-reveal,
+  .splash-title-reveal,
+  .splash-sweep-reveal,
+  .splash-skip-reveal,
+  .ff-reticle-spin-cw,
+  .ff-reticle-spin-ccw,
+  .ff-splash-spin-cw,
+  .ff-splash-spin-ccw,
+  .ff-scanline-y,
+  .ff-shockwave,
+  .ff-logo-laser,
+  .ff-headlock-pulse {
+    animation: none !important;
+  }
+  .crimson-ember,
+  .backdrop-scan,
+  .ff-scanline-y,
+  .ff-shockwave,
+  .ff-logo-laser {
+    opacity: 0;
+  }
+  .ff-btn-sheen::after {
+    display: none;
+  }
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Hide clunky desktop/mobile scrollbars while keeping touch momentum smooth */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* iPhone-style spring easing for segmented pill sliders & state switches */
+@keyframes iosPanelGlide {
+  0% {
+    transform: translate3d(0, 8px, 0) scale(0.988);
+    opacity: 0.45;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+.ios-spring-indicator {
+  transition:
+    transform 380ms cubic-bezier(0.32, 0.72, 0, 1),
+    width 380ms cubic-bezier(0.32, 0.72, 0, 1),
+    height 380ms cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform, width, height;
+}
+
+.ios-spring-btn {
+  transition:
+    color 240ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 200ms ease;
+}
+
+.ios-spring-btn:active {
+  transform: scale(0.965);
+}
+
+.ios-panel-glide {
+  animation: iosPanelGlide 320ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ios-spring-indicator,
+  .ios-spring-btn {
+    transition: none !important;
+  }
+  .ios-panel-glide {
+    animation: none !important;
+  }
+}
+
