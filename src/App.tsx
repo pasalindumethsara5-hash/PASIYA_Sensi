@@ -2,9 +2,12 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Activity,
   Archive,
+  Crown,
   Crosshair,
   Gauge,
+  Sparkles,
   Target,
+  User,
   Wifi,
 } from 'lucide-react';
 import { AimAssistView } from './components/AimAssistView';
@@ -20,6 +23,19 @@ import { SensitivityView } from './components/SensitivityView';
 import { SplashIntro } from './components/SplashIntro';
 import { ToolsHubView } from './components/ToolsHubView';
 import { VaultGuardView } from './components/VaultGuardView';
+import { AuthModal } from './components/AuthModal';
+import { AdminConsoleModal } from './components/AdminConsoleModal';
+import { AppUpdateModal } from './components/AppUpdateModal';
+import {
+  type AppVersionInfo,
+  CURRENT_APP_VERSION,
+  fetchRemoteVersion,
+  isUpdateAvailable,
+} from './lib/appUpdater';
+import {
+  type GamerUser,
+  getCurrentUser,
+} from './lib/authStore';
 import { useDeviceTelemetry } from './hooks/useDeviceTelemetry';
 import {
   type ReticleOverlayConfig,
@@ -160,6 +176,46 @@ export default function App() {
     'counting'
   );
   const launchTimerRef = useRef<number | null>(null);
+
+  const [currentUser, setCurrentUser] = useState<GamerUser | null>(() =>
+    getCurrentUser()
+  );
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [availableUpdate, setAvailableUpdate] = useState<AppVersionInfo | null>(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
+  // Logo secret 5-click easter egg for Owner Admin Console
+  const logoClickCountRef = useRef(0);
+  const logoClickTimerRef = useRef<number | null>(null);
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleSelectTab('sensitivity');
+    logoClickCountRef.current += 1;
+    if (logoClickTimerRef.current) {
+      window.clearTimeout(logoClickTimerRef.current);
+    }
+    logoClickTimerRef.current = window.setTimeout(() => {
+      logoClickCountRef.current = 0;
+    }, 2500);
+
+    if (logoClickCountRef.current >= 5) {
+      logoClickCountRef.current = 0;
+      triggerHaptic('success');
+      setShowAdminModal(true);
+    }
+  };
+
+  // Check for OTA App Updates on startup
+  useEffect(() => {
+    void fetchRemoteVersion().then((remote) => {
+      if (remote && isUpdateAvailable(remote)) {
+        setAvailableUpdate(remote);
+        setShowUpdateModal(true);
+      }
+    });
+  }, []);
 
   // Install global tactile button feedback across all interactive controls
   useEffect(() => installGlobalButtonHaptics(), []);
@@ -502,14 +558,12 @@ export default function App() {
       {/* Strict 3-Zone Frosted Glass Top Navigation Bar */}
       <header className="sticky top-0 z-30 h-14 glass-navbar">
         <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-8">
-          {/* Zone 1: Single brand wordmark + PM crest logo */}
+          {/* Zone 1: Single brand wordmark + PM crest logo (5 clicks opens Owner Console) */}
           <a
             href="#top"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSelectTab('sensitivity');
-            }}
-            className="inline-flex items-center gap-2.5 font-display text-lg font-extrabold tracking-tight text-white whitespace-nowrap shrink-0"
+            onClick={handleLogoClick}
+            className="inline-flex items-center gap-2.5 font-display text-lg font-extrabold tracking-tight text-white whitespace-nowrap shrink-0 cursor-pointer"
+            title="PASIYA Sensi"
           >
             <BrandLogo size={28} />
             <span>
@@ -547,8 +601,46 @@ export default function App() {
             })}
           </nav>
 
-          {/* Zone 3: Single primary action */}
-          <div className="flex items-center shrink-0">
+          {/* Zone 3: Gamer Profile / Login / Admin trigger + Install/Update Actions */}
+          <div className="flex items-center gap-2 shrink-0">
+            {availableUpdate && (
+              <button
+                type="button"
+                onClick={() => setShowUpdateModal(true)}
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#EF4444]/20 border border-[#EF4444]/60 text-white text-xs font-bold animate-pulse cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#EF4444]" />
+                <span>v{availableUpdate.version} Available</span>
+              </button>
+            )}
+
+            {/* Gamer Profile / Login Pill */}
+            {currentUser ? (
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(true)}
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-semibold text-white inline-flex items-center gap-2 cursor-pointer transition-colors"
+              >
+                {currentUser.isOwner ? (
+                  <Crown className="w-3.5 h-3.5 text-[#EAB308]" />
+                ) : (
+                  <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
+                )}
+                <span className="max-w-[70px] sm:max-w-[100px] truncate">
+                  {currentUser.gamerTag}
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(true)}
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-semibold text-white inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <User className="w-3.5 h-3.5 text-[#9A9AA6]" />
+                <span className="hidden sm:inline">Sign In</span>
+              </button>
+            )}
+
             <PWAInstallButton
               onFallbackAction={() => void handleCopyActiveConfig()}
               fallbackLabel={copiedTop ? 'Copied' : 'Copy Config'}
@@ -736,6 +828,25 @@ export default function App() {
           setLaunchCountdown(0);
         }}
       />
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onOpenAdminConsole={() => setShowAdminModal(true)}
+        onUserChanged={(u) => setCurrentUser(u)}
+      />
+
+      <AdminConsoleModal
+        isOpen={showAdminModal}
+        onClose={() => setShowAdminModal(false)}
+      />
+
+      {availableUpdate && showUpdateModal && (
+        <AppUpdateModal
+          updateInfo={availableUpdate}
+          onClose={() => setShowUpdateModal(false)}
+        />
+      )}
 
       <OfflineIndicator />
     </div>

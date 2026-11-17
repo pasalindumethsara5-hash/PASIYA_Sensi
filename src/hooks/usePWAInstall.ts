@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import {
   type BeforeInstallPromptEvent,
   type InstallEnvironment,
@@ -12,7 +13,18 @@ export function usePWAInstall() {
         ? (window.__pasiyaDeferredInstallPrompt ?? null)
         : null
     );
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const isNative = Capacitor.isNativePlatform();
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone ===
+        true ||
+      window.location.protocol === 'capacitor:' ||
+      window.location.protocol === 'ionic:' ||
+      window.navigator.userAgent.includes('wv');
+    return isNative || isStandalone;
+  });
   const [env, setEnv] = useState<InstallEnvironment>(() => {
     if (typeof window === 'undefined') {
       return {
@@ -22,10 +34,15 @@ export function usePWAInstall() {
         isInIframe: false,
       };
     }
+    const isNative = Capacitor.isNativePlatform();
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as unknown as { standalone?: boolean }).standalone ===
-        true;
+        true ||
+      isNative ||
+      window.location.protocol === 'capacitor:' ||
+      window.location.protocol === 'ionic:' ||
+      window.navigator.userAgent.includes('wv');
     let inIframe = false;
     try {
       inIframe = window.self !== window.top;
@@ -42,10 +59,15 @@ export function usePWAInstall() {
   useEffect(() => {
     const mq = window.matchMedia('(display-mode: standalone)');
     const syncEnvironment = () => {
+      const isNative = Capacitor.isNativePlatform();
       const isStandalone =
         mq.matches ||
         (window.navigator as unknown as { standalone?: boolean }).standalone ===
-          true;
+          true ||
+        isNative ||
+        window.location.protocol === 'capacitor:' ||
+        window.location.protocol === 'ionic:' ||
+        window.navigator.userAgent.includes('wv');
       let inIframe = false;
       try {
         inIframe = window.self !== window.top;

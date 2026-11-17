@@ -29,6 +29,7 @@ import {
 } from '../lib/optimizer';
 import { triggerHaptic, triggerSliderDetent } from '../lib/haptics';
 import type { GameEdition } from '../lib/gameLauncher';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 import { DragSimulator } from './DragSimulator';
 import { GameLauncherCard } from './GameLauncherCard';
 import { SlidingSegmentedControl } from './SlidingSegmentedControl';
@@ -126,6 +127,7 @@ export const SensitivityView: React.FC<SensitivityViewProps> = ({
   onCopyConfig,
   copied,
 }) => {
+  const { isInstalled } = usePWAInstall();
   const [customName, setCustomName] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -246,7 +248,31 @@ export const SensitivityView: React.FC<SensitivityViewProps> = ({
   return (
     <div className="space-y-6">
       {/* 1-Click Platform Install & APK Download Banner */}
-      {platform === 'android' ? (
+      {isInstalled ? (
+        <div className="p-3.5 rounded-2xl glass-panel-crimson border border-[#22C55E]/40 flex items-center justify-between gap-3 shadow-[0_0_20px_rgba(34,197,94,0.12)]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#22C55E]/15 border border-[#22C55E]/40 flex items-center justify-center shrink-0">
+              <Check className="w-5 h-5 text-[#22C55E]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-white">
+                  PASIYA Sensi Engine Active
+                </span>
+                <span className="text-[10px] font-mono-num font-bold text-[#22C55E] bg-[#22C55E]/20 px-2 py-0.5 rounded border border-[#22C55E]/30">
+                  INSTALLED PRO
+                </span>
+              </div>
+              <p className="text-xs text-[#A7F3D0] mt-0.5">
+                Running in direct hardware mode · Free Fire &amp; MAX Calibrated · 100% Antiban
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-mono font-semibold text-[#22C55E] bg-[#22C55E]/15 px-3 py-1 rounded-lg border border-[#22C55E]/30 hidden sm:inline-block">
+            READY FOR BATTLE
+          </span>
+        </div>
+      ) : platform === 'android' ? (
         <div className="p-3.5 rounded-2xl bg-[#0D1C12] border border-[#22C55E]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[0_0_20px_rgba(34,197,94,0.12)]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#22C55E]/15 border border-[#22C55E]/40 flex items-center justify-center shrink-0">
@@ -285,14 +311,14 @@ export const SensitivityView: React.FC<SensitivityViewProps> = ({
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-bold text-white">
-                  iPhone Home Screen App Setup
+                  iPhone Direct Settings App (.mobileconfig)
                 </span>
                 <span className="text-[10px] font-mono-num font-bold text-[#EF4444] bg-[#EF4444]/20 px-2 py-0.5 rounded border border-[#EF4444]/30">
-                  SAFARI 2 TAPS
+                  FULLSCREEN APP
                 </span>
               </div>
               <p className="text-xs text-[#FCA5A5] mt-0.5">
-                In Safari: Tap <strong>Share (📤)</strong> &gt; <strong>Add to Home Screen (➕)</strong> for full offline app!
+                Settings &gt; Profile Downloaded &gt; Install. Launches fullscreen like a native app!
               </p>
             </div>
           </div>

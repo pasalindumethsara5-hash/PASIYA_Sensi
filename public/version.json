@@ -1,0 +1,17 @@
+{
+  "version": "2.1.0",
+  "versionCode": 210,
+  "releaseDate": "2026-11-17",
+  "minRequiredVersion": 100,
+  "apkUrl": "https://pasalindumethsara5-hash.github.io/PASIYA_Sensi/PASIYA-SENSI.apk",
+  "profileUrl": "https://pasalindumethsara5-hash.github.io/PASIYA_Sensi/PASIYA-SENSI.mobileconfig",
+  "mandatory": false,
+  "changelog": [
+    "✨ Luxury Glassmorphism UI redesign with frosted panels",
+    "⚡ In-App 1-Tap Auto-Update engine (OTA APK Updater)",
+    "🎮 GamerTag Authentication & Cloud Sync (Free Fire UID)",
+    "👑 Secret Owner/Admin Dashboard to monitor all registered players",
+    "🍎 iPhone Fullscreen Configuration Profile with Official Emblem",
+    "🎯 Native Screen Overlay latency reduced to 0ms"
+  ]
+}

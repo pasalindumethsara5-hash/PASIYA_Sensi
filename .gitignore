@@ -16,3 +16,4 @@ android/local.properties
 android/capacitor-cordova-android-plugins/build/
 *.apk
 !public/PASIYA-SENSI.apk
+scratch/

@@ -39,17 +39,9 @@ export const PWAInstallButton: React.FC<{
     }
   }, [isInstalled]);
 
-  // If already running as an installed Home Screen / standalone app, expose quick config action
+  // If already running as an installed Home Screen / native app, do not show install button
   if (isInstalled) {
-    return onFallbackAction ? (
-      <button
-        type="button"
-        onClick={onFallbackAction}
-        className="min-h-[40px] px-4 py-2 rounded-lg bg-[#EF4444] text-white text-xs font-semibold tracking-tight hover:bg-[#DC2626] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-      >
-        {fallbackLabel}
-      </button>
-    ) : null;
+    return null;
   }
 
   const handlePrimaryInstallClick = () => {
